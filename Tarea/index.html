@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constructor de Proposiciones Moleculares - Lógica Proposicional</title>
+    <!-- Fuentes modernas para legibilidad tipográfica y símbolos lógicos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- ENCABEZADO DE LA APLICACIÓN -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand-wrapper">
+                <div class="brand-icon">∧</div>
+                <div>
+                    <h1 class="brand-title">Constructor de Proposiciones Moleculares</h1>
+                    <p class="brand-subtitle">Lógica Proposicional • Fórmulas Bien Formadas (FBF) • Árboles Sintácticos (AST)</p>
+                </div>
+            </div>
+
+            <!-- NAVEGACIÓN ENTRE PESTAÑAS -->
+            <nav class="nav-tabs" role="tablist">
+                <button class="tab-btn active" data-tab="build-tab" role="tab" aria-selected="true">
+                    <span>🔨 Modo Construir</span>
+                </button>
+                <button class="tab-btn" data-tab="reverse-tab" role="tab" aria-selected="false">
+                    <span>🔍 Modo Inverso</span>
+                </button>
+                <button class="tab-btn" data-tab="tests-tab" role="tab" aria-selected="false">
+                    <span>🧪 Suite de Pruebas</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="app-main">
+
+        <!-- BARRA COMÚN DE EJEMPLOS DE PRUEBA -->
+        <section class="examples-bar" aria-label="Ejemplos predefinidos">
+            <span class="examples-label">💡 Ejemplos de prueba:</span>
+            <div class="examples-chips">
+                <button type="button" class="example-chip" data-formula="((p ∧ q) → ¬r)">((p ∧ q) → ¬r)</button>
+                <button type="button" class="example-chip" data-formula="(p ∨ q) ↔ (r → s)">(p ∨ q) ↔ (r → s)</button>
+                <button type="button" class="example-chip" data-formula="¬(p ∧ q) ∨ r">¬(p ∧ q) ∨ r</button>
+                <button type="button" class="example-chip" data-formula="(p → (q → r)) ↔ ((p ∧ q) → r)">(p → (q → r)) ↔ ((p ∧ q) → r)</button>
+                <button type="button" class="example-chip" data-formula="¬(p ∨ ¬q) ∧ (r → s)">¬(p ∨ ¬q) ∧ (r → s)</button>
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 1: MODO CONSTRUIR
+             ======================================================== -->
+        <section id="build-tab" class="tab-content active" role="tabpanel">
+            <div class="build-grid">
+                <div class="builder-card">
+                    <h2 class="card-title">Construcción y Validación en Tiempo Real</h2>
+                    <p class="card-desc">
+                        Inserte proposiciones atómicas y conectivos mediante el teclado virtual o escriba directamente con su teclado físico.
+                    </p>
+
+                    <!-- Input / Display interactivo de la fórmula -->
+                    <div class="formula-input-wrapper">
+                        <input type="text" id="build-input" class="formula-input" 
+                               placeholder="Ej: ((p ∧ q) → ¬r) o escriba con teclado..." 
+                               autocomplete="off" spellcheck="false" autofocus>
+                    </div>
+
+                    <!-- Estado de validación en tiempo real -->
+                    <div class="status-bar" id="build-status-bar">
+                        <span id="build-status-badge" class="status-badge status-empty">Estado</span>
+                        <span id="build-status-text" class="status-text">Esperando entrada de fórmula...</span>
+                    </div>
+
+                    <!-- Caja de error con posición exacta señalada -->
+                    <div id="build-error-container" class="error-box hidden" role="alert">
+                        <div id="build-error-highlight" class="error-highlight-section"></div>
+                        <div id="build-error-explanation" class="error-explanation"></div>
+                    </div>
+
+                    <!-- Vista previa de Tokens reconocidos -->
+                    <div class="tokens-preview-box" id="build-tokens-preview"></div>
+
+                    <!-- Teclado virtual interactivo -->
+                    <div class="keyboard-section">
+                        <div class="keyboard-grid">
+                            
+                            <!-- Fila 1: Proposiciones atómicas -->
+                            <div>
+                                <div class="key-group-label">1. Proposiciones Atómicas</div>
+                                <div class="keys-row">
+                                    <button type="button" class="k-btn k-atom" data-insert="p" title="Proposición atómica p">p</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="q" title="Proposición atómica q">q</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="r" title="Proposición atómica r">r</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="s" title="Proposición atómica s">s</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="t" title="Proposición atómica t">t</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="u" title="Proposición atómica u">u</button>
+                                    
+                                    <!-- Inserción personalizada de otra variable -->
+                                    <div class="custom-atom-wrapper">
+                                        <input type="text" id="custom-atom-input" class="custom-atom-input" placeholder="v, w..." maxlength="4" title="Escriba otra variable atómica">
+                                        <button type="button" id="btn-insert-custom-atom" class="k-btn k-action" title="Insertar variable personalizada">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fila 2: Conectivos Lógicos (ordenados por precedencia) -->
+                            <div>
+                                <div class="key-group-label">2. Conectivos Lógicos (según precedencia)</div>
+                                <div class="keys-row">
+                                    <button type="button" class="k-btn k-op k-op-not" data-insert="¬" title="Negación (¬, ~, !) - Mayor precedencia">
+                                        ¬ <span class="op-tooltip">[¬]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" ∧ " title="Conjunción (∧, &, &&) - Asociativa a la izquierda">
+                                        ∧ <span class="op-tooltip">[∧]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" ∨ " title="Disyunción (∨, |, ||) - Asociativa a la izquierda">
+                                        ∨ <span class="op-tooltip">[∨]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" → " title="Condicional (→, ->) - Asociativa a la derecha">
+                                        → <span class="op-tooltip">[→]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" ↔ " title="Bicondicional (↔, <->) - Asociativa a la izquierda">
+                                        ↔ <span class="op-tooltip">[↔]</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Fila 3: Paréntesis y Edición -->
+                            <div>
+                                <div class="key-group-label">3. Agrupación y Control de Edición</div>
+                                <div class="keys-row">
+                                    <button type="button" class="k-btn k-paren" data-insert="(" title="Abre paréntesis">(</button>
+                                    <button type="button" class="k-btn k-paren" data-insert=")" title="Cierra paréntesis">)</button>
+                                    <button type="button" id="btn-backspace" class="k-btn k-action" title="Borrar último carácter (Backspace)">⌫ Borrar</button>
+                                    <button type="button" id="btn-undo" class="k-btn k-action" title="Deshacer cambio (Ctrl+Z)" disabled>↶ Deshacer</button>
+                                    <button type="button" id="btn-redo" class="k-btn k-action" title="Rehacer cambio (Ctrl+Y)" disabled>↷ Rehacer</button>
+                                    <button type="button" id="btn-clear" class="k-btn k-clear" title="Limpiar fórmula completa">🗑 Limpiar</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Acciones inferiores -->
+                    <div class="builder-bottom-actions">
+                        <button type="button" id="btn-copy-build" class="btn-secondary" title="Copiar fórmula">
+                            📋 Copiar Fórmula
+                        </button>
+                        <button type="button" id="btn-transfer-reverse" class="btn-primary" title="Enviar fórmula al Modo Inverso para analizarla" disabled>
+                            🔍 Analizar en Modo Inverso →
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 2: MODO INVERSO
+             ======================================================== -->
+        <section id="reverse-tab" class="tab-content" role="tabpanel">
+            <div class="reverse-search-card">
+                <h2 class="card-title">Análisis Sintáctico y Descomposición de FBF</h2>
+                <p class="card-desc">
+                    Ingrese una Fórmula Bien Formada. El sistema la tokenizará, validará, identificará proposiciones, conectivos, conectivo principal, subfórmulas, árbol sintáctico (AST) y fórmula explícitamente parentizada.
+                </p>
+
+                <div class="reverse-input-group">
+                    <input type="text" id="reverse-input" class="formula-input" 
+                           placeholder="Ingrese una fórmula lógica (ej: ((p ∧ q) → ¬r) o p && q -> ~r)" 
+                           autocomplete="off" spellcheck="false">
+                    <button type="button" id="btn-analyze-reverse" class="btn-primary">
+                        🔍 Analizar Fórmula
+                    </button>
+                    <button type="button" id="btn-clear-reverse" class="btn-secondary">
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error en modo inverso si la fórmula no es FBF -->
+            <div id="reverse-error-container" class="error-box hidden" role="alert">
+                <div id="reverse-error-highlight" class="error-highlight-section"></div>
+                <div id="reverse-error-explanation" class="error-explanation"></div>
+            </div>
+
+            <!-- Resultados del análisis -->
+            <div id="reverse-results-container" class="reverse-results-grid hidden">
+                
+                <!-- c) Conectivo Principal -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🌟 Conectivo Principal</span>
+                    </div>
+                    <div class="main-connective-hero">
+                        <div id="reverse-main-symbol" class="main-symbol-box symbol-present">→</div>
+                        <div class="main-conn-details">
+                            <span id="reverse-main-name" class="main-conn-title">Condicional (Implicación)</span>
+                            <p id="reverse-main-desc" class="main-conn-desc">Une dos subfórmulas como antecedente y consecuente.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- a) Proposiciones Atómicas Encontradas -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🔤 Proposiciones Atómicas</span>
+                        <span id="reverse-atoms-count" class="res-count">(0)</span>
+                    </div>
+                    <div id="reverse-atoms-list" class="atoms-badges-container"></div>
+                </div>
+
+                <!-- b) Conectivos Usados -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">⚡ Conectivos Usados</span>
+                        <span id="reverse-connectives-count" class="res-count">(0)</span>
+                    </div>
+                    <div id="reverse-connectives-list" class="connectives-container"></div>
+                </div>
+
+                <!-- f) FBF Reconstruida con Paréntesis Explícitos -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🛡️ FBF con Paréntesis Explícitos</span>
+                        <button type="button" id="btn-copy-parenthesized" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            📋 Copiar
+                        </button>
+                    </div>
+                    <div class="parenthesized-box">
+                        <span id="reverse-parenthesized-text" class="parenthesized-text">((p ∧ q) → (¬r))</span>
+                    </div>
+                </div>
+
+                <!-- e) Árbol Sintáctico (AST) - Gráfico SVG y Textual ASCII -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">🌳 Árbol Sintáctico (AST)</span>
+                        <div class="ast-view-toggle">
+                            <button type="button" id="btn-view-graph" class="view-toggle-btn active">Visual (SVG)</button>
+                            <button type="button" id="btn-view-text" class="view-toggle-btn">Texto (ASCII)</button>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor del AST SVG Gráfico -->
+                    <div id="ast-svg-container" class="ast-viewport"></div>
+
+                    <!-- Contenedor del AST Textual ASCII -->
+                    <div id="ast-text-container" class="ast-viewport hidden" style="flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+                            <button type="button" id="btn-copy-ascii" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                                📋 Copiar Árbol
+                            </button>
+                        </div>
+                        <pre id="ast-ascii-pre" class="ast-ascii-pre"></pre>
+                    </div>
+                </div>
+
+                <!-- d) Subfórmulas -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">🧩 Subfórmulas de la FBF</span>
+                        <span id="reverse-subformulas-count" class="res-count">(0)</span>
+                    </div>
+                    <p class="card-desc">Lista ordenada de menor a mayor complejidad (desde atómicas hasta la fórmula completa):</p>
+                    <div class="subformulas-table-wrapper">
+                        <table class="subformulas-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-num">#</th>
+                                    <th>Subfórmula</th>
+                                    <th>Tipo de Expresión</th>
+                                    <th>Forma Parentizada</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reverse-subformulas-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 3: SUITE DE PRUEBAS UNITARIAS
+             ======================================================== -->
+        <section id="tests-tab" class="tab-content" role="tabpanel">
+            <div class="builder-card">
+                <h2 class="card-title">Suite de Pruebas Unitarias Integrada</h2>
+                <p class="card-desc">
+                    Verificación integral del Lexer, Parser, Precedencia, Asociatividad, Reconstrucción de subfórmulas y Detección de casos inválidos con posición de error.
+                </p>
+
+                <!-- Resumen de pruebas -->
+                <div class="tests-summary-bar">
+                    <div class="test-metric-card">
+                        <span id="test-summary-total" class="test-metric-val val-total">-</span>
+                        <span class="test-metric-label">Total Pruebas</span>
+                    </div>
+                    <div class="test-metric-card">
+                        <span id="test-summary-passed" class="test-metric-val val-passed">-</span>
+                        <span class="test-metric-label">Pruebas Pasadas</span>
+                    </div>
+                    <div class="test-metric-card">
+                        <span id="test-summary-failed" class="test-metric-val val-failed">-</span>
+                        <span class="test-metric-label">Pruebas Falladas</span>
+                    </div>
+                </div>
+
+                <div class="test-controls">
+                    <button type="button" id="btn-run-tests" class="btn-primary">
+                        ▶ Ejecutar Todas las Pruebas
+                    </button>
+                </div>
+
+                <!-- Lista de resultados -->
+                <div id="test-results-list" class="test-results-container">
+                    <p class="empty-hint">Haga clic en "Ejecutar Todas las Pruebas" para iniciar la suite de pruebas unitarias.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PIE DE PÁGINA (FOOTER) CON REGLAS DE PRECEDENCIA -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <div>
+                <strong>Constructor de Proposiciones Moleculares</strong> • Vanilla HTML5 / CSS3 / JavaScript
+            </div>
+            <ul class="footer-rules" aria-label="Reglas de precedencia">
+                <li>1. ¬ (Mayor, der)</li>
+                <li>2. ∧ (Izq)</li>
+                <li>3. ∨ (Izq)</li>
+                <li>4. → (Der)</li>
+                <li>5. ↔ (Menor, izq)</li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS MODULARES -->
+    <script src="lexer.js"></script>
+    <script src="ast.js"></script>
+    <script src="parser.js"></script>
+    <script src="tests.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
