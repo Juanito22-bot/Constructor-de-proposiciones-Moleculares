@@ -1,0 +1,20 @@
+{
+  "name": "constructor-de-proposiciones-moleculares",
+  "version": "1.0.0",
+  "description": "Aplicación web para construir y analizar Fórmulas Bien Formadas (FBF) de lógica proposicional con AST y descomposición sintáctica.",
+  "main": "index.html",
+  "scripts": {
+    "test": "node tests.js"
+  },
+  "keywords": [
+    "logica-proposicional",
+    "fbf",
+    "wff",
+    "ast",
+    "parser",
+    "lexer",
+    "truth-tree"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Constructor de Proposiciones Moleculares - Lógica Proposicional</title>
+    <!-- Fuentes modernas para legibilidad tipográfica y símbolos lógicos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- ========================================================
+         MODAL / PANTALLA DE INICIO Y AUTENTICACIÓN (LOGIN / REGISTRO / ADMIN)
+         ======================================================== -->
+    <div id="auth-overlay" class="auth-overlay hidden">
+        <div class="auth-modal">
+            <div class="auth-header">
+                <div class="auth-brand-icon">∧</div>
+                <h2 class="auth-title">Acceso al Sistema</h2>
+                <p class="auth-subtitle">Constructor de Proposiciones Moleculares</p>
+            </div>
+
+            <!-- Selector de tipo de acceso (3 botones requeridos) -->
+            <div class="auth-tabs" role="tablist">
+                <button type="button" class="auth-tab-btn active" id="auth-tab-login" data-auth-mode="login">
+                    👤 Iniciar Sesión (Usuario)
+                </button>
+                <button type="button" class="auth-tab-btn" id="auth-tab-register" data-auth-mode="register">
+                    ✨ Registrarse
+                </button>
+                <button type="button" class="auth-tab-btn" id="auth-tab-admin" data-auth-mode="admin">
+                    🛡️ Administrador
+                </button>
+            </div>
+
+            <!-- Contenedor de formularios dinámicos -->
+            <div class="auth-forms-container">
+                
+                <!-- 1. Formulario Iniciar Sesión (Usuario) -->
+                <form id="form-login" class="auth-form active">
+                    <div class="form-group">
+                        <label for="login-username">Nombre de Usuario</label>
+                        <input type="text" id="login-username" class="auth-input" placeholder="Ej: estudiante" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Contraseña</label>
+                        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary auth-submit-btn">
+                        🚀 Entrar como Usuario
+                    </button>
+                    <p class="auth-hint">¿No tienes cuenta? Haz clic en la pestaña <strong>Registrarse</strong>.</p>
+                </form>
+
+                <!-- 2. Formulario Registrarse -->
+                <form id="form-register" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="register-username">Nombre de Usuario Deseado</label>
+                        <input type="text" id="register-username" class="auth-input" placeholder="Mínimo 3 caracteres" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Contraseña</label>
+                        <input type="password" id="register-password" class="auth-input" placeholder="Mínimo 4 caracteres" autocomplete="new-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password-confirm">Confirmar Contraseña</label>
+                        <input type="password" id="register-password-confirm" class="auth-input" placeholder="Repite la contraseña" autocomplete="new-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary auth-submit-btn">
+                        ✨ Crear Mi Cuenta
+                    </button>
+                    <p class="auth-hint">Tus datos se guardarán localmente en este navegador (localStorage).</p>
+                </form>
+
+                <!-- 3. Formulario Administrador -->
+                <form id="form-admin" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="admin-password">Contraseña Maestra de Administrador</label>
+                        <input type="password" id="admin-password" class="auth-input" placeholder="Por defecto: admin123" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary auth-submit-btn btn-admin-accent">
+                        🛡️ Acceder como Administrador
+                    </button>
+                    <p class="auth-hint">Acceso con privilegios de gestión de usuarios, estadísticas y configuración global.</p>
+                </form>
+
+                <!-- Mensaje de feedback de autenticación -->
+                <div id="auth-alert" class="auth-alert hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENCABEZADO DE LA APLICACIÓN -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand-wrapper">
+                <div class="brand-icon">∧</div>
+                <div>
+                    <h1 class="brand-title" id="app-header-title">Constructor de Proposiciones Moleculares</h1>
+                    <p class="brand-subtitle">Lógica Proposicional • Fórmulas Bien Formadas (FBF) • Árboles Sintácticos (AST)</p>
+                </div>
+            </div>
+
+            <!-- CONTROLES DE USUARIO Y SESIÓN EN CABECERA -->
+            <div class="user-header-controls" id="user-header-controls">
+                <div class="user-pill">
+                    <span id="user-role-badge" class="user-role-badge role-user">USER</span>
+                    <span id="user-display-name" class="user-name">Iniciando...</span>
+                </div>
+                <button type="button" id="btn-theme-toggle" class="btn-icon" title="Alternar Modo Oscuro / Claro" aria-label="Cambiar tema">
+                    🌓
+                </button>
+                <button type="button" id="btn-logout" class="btn-secondary btn-sm" title="Cerrar sesión actual">
+                    🚪 Cerrar Sesión
+                </button>
+            </div>
+
+            <!-- NAVEGACIÓN ENTRE PESTAÑAS -->
+            <nav class="nav-tabs" role="tablist">
+                <button class="tab-btn active" data-tab="build-tab" role="tab" aria-selected="true">
+                    <span>🔨 Constructor</span>
+                </button>
+                <button class="tab-btn" data-tab="reverse-tab" role="tab" aria-selected="false">
+                    <span>🔍 Inversor</span>
+                </button>
+                <button class="tab-btn" data-tab="ai-tab" role="tab" aria-selected="false">
+                    <span>🤖 Asistente IA</span>
+                </button>
+                <button class="tab-btn" data-tab="tests-tab" role="tab" aria-selected="false">
+                    <span>🧪 Suite de Pruebas</span>
+                </button>
+                <button class="tab-btn hidden" id="tab-btn-admin" data-tab="admin-tab" role="tab" aria-selected="false">
+                    <span>⚙️ Administrador</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="app-main">
+
+        <!-- BARRA COMÚN DE EJEMPLOS DE PRUEBA (DINÁMICA) -->
+        <section class="examples-bar" aria-label="Ejemplos predefinidos">
+            <span class="examples-label">💡 Ejemplos rápidos:</span>
+            <div class="examples-chips" id="global-examples-container">
+                <!-- Se inyectan dinámicamente desde AppConfig en localStorage -->
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 1: MODO CONSTRUIR
+             ======================================================== -->
+        <section id="build-tab" class="tab-content active" role="tabpanel">
+            <div class="build-grid">
+                <div class="builder-card">
+                    <h2 class="card-title">Construcción y Validación en Tiempo Real</h2>
+                    <p class="card-desc">
+                        Inserte proposiciones atómicas y conectivos mediante el teclado virtual o escriba directamente con su teclado físico.
+                    </p>
+
+                    <!-- Input / Display interactivo de la fórmula -->
+                    <div class="formula-input-wrapper">
+                        <input type="text" id="build-input" class="formula-input" 
+                               placeholder="Ej: ((p ∧ q) → ¬r) o escriba con teclado..." 
+                               autocomplete="off" spellcheck="false" autofocus>
+                    </div>
+
+                    <!-- Estado de validación en tiempo real -->
+                    <div class="status-bar" id="build-status-bar">
+                        <span id="build-status-badge" class="status-badge status-empty">Estado</span>
+                        <span id="build-status-text" class="status-text">Esperando entrada de fórmula...</span>
+                    </div>
+
+                    <!-- Caja de error con posición exacta señalada -->
+                    <div id="build-error-container" class="error-box hidden" role="alert">
+                        <div id="build-error-highlight" class="error-highlight-section"></div>
+                        <div id="build-error-explanation" class="error-explanation"></div>
+                    </div>
+
+                    <!-- Vista previa de Tokens reconocidos -->
+                    <div class="tokens-preview-box" id="build-tokens-preview"></div>
+
+                    <!-- Teclado virtual interactivo -->
+                    <div class="keyboard-section">
+                        <div class="keyboard-grid">
+                            
+                            <!-- Fila 1: Proposiciones atómicas -->
+                            <div>
+                                <div class="key-group-label">1. Proposiciones Atómicas</div>
+                                <div class="keys-row">
+                                    <button type="button" class="k-btn k-atom" data-insert="p" title="Proposición atómica p">p</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="q" title="Proposición atómica q">q</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="r" title="Proposición atómica r">r</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="s" title="Proposición atómica s">s</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="t" title="Proposición atómica t">t</button>
+                                    <button type="button" class="k-btn k-atom" data-insert="u" title="Proposición atómica u">u</button>
+                                    
+                                    <!-- Inserción personalizada de otra variable -->
+                                    <div class="custom-atom-wrapper">
+                                        <input type="text" id="custom-atom-input" class="custom-atom-input" placeholder="v, w..." maxlength="4" title="Escriba otra variable atómica">
+                                        <button type="button" id="btn-insert-custom-atom" class="k-btn k-action" title="Insertar variable personalizada">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fila 2: Conectivos Lógicos (ordenados por precedencia) -->
+                            <div>
+                                <div class="key-group-label">2. Conectivos Lógicos (según precedencia)</div>
+                                <div class="keys-row">
+                                    <button type="button" class="k-btn k-op k-op-not" data-insert="¬" title="Negación (¬, ~, !) - Mayor precedencia">
+                                        ¬ <span class="op-tooltip">[¬]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" ∧ " title="Conjunción (∧, &, &&) - Asociativa a la izquierda">
+                                        ∧ <span class="op-tooltip">[∧]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" ∨ " title="Disyunción (∨, |, ||) - Asociativa a la izquierda">
+                                        ∨ <span class="op-tooltip">[∨]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" → " title="Condicional (→, ->) - Asociativa a la derecha">
+                                        → <span class="op-tooltip">[→]</span>
+                                    </button>
+                                    <button type="button" class="k-btn k-op" data-insert=" ↔ " title="Bicondicional (↔, <->) - Asociativa a la izquierda">
+                                        ↔ <span class="op-tooltip">[↔]</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Fila 3: Paréntesis y Edición -->
+                            <div>
+                                <div class="key-group-label">3. Agrupación y Control de Edición</div>
+                                <div class="keys-row">
+                                    <button type="button" class="k-btn k-paren" data-insert="(" title="Abre paréntesis">(</button>
+                                    <button type="button" class="k-btn k-paren" data-insert=")" title="Cierra paréntesis">)</button>
+                                    <button type="button" id="btn-backspace" class="k-btn k-action" title="Borrar último carácter (Backspace)">⌫ Borrar</button>
+                                    <button type="button" id="btn-undo" class="k-btn k-action" title="Deshacer cambio (Ctrl+Z)" disabled>↶ Deshacer</button>
+                                    <button type="button" id="btn-redo" class="k-btn k-action" title="Rehacer cambio (Ctrl+Y)" disabled>↷ Rehacer</button>
+                                    <button type="button" id="btn-clear" class="k-btn k-clear" title="Limpiar fórmula completa">🗑 Limpiar</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Acciones inferiores -->
+                    <div class="builder-bottom-actions">
+                        <button type="button" id="btn-copy-build" class="btn-secondary" title="Copiar fórmula">
+                            📋 Copiar Fórmula
+                        </button>
+                        <button type="button" id="btn-transfer-reverse" class="btn-primary" title="Enviar fórmula al Modo Inverso para analizarla" disabled>
+                            🔍 Analizar en Modo Inverso →
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 2: MODO INVERSO
+             ======================================================== -->
+        <section id="reverse-tab" class="tab-content" role="tabpanel">
+            <div class="reverse-search-card">
+                <h2 class="card-title">Análisis Sintáctico y Descomposición de FBF</h2>
+                <p class="card-desc">
+                    Ingrese una Fórmula Bien Formada. El sistema la tokenizará, validará, identificará proposiciones, conectivos, conectivo principal, subfórmulas, árbol sintáctico (AST) y fórmula explícitamente parentizada.
+                </p>
+
+                <div class="reverse-input-group">
+                    <input type="text" id="reverse-input" class="formula-input" 
+                           placeholder="Ingrese una fórmula lógica (ej: ((p ∧ q) → ¬r) o p && q -> ~r)" 
+                           autocomplete="off" spellcheck="false">
+                    <button type="button" id="btn-analyze-reverse" class="btn-primary">
+                        🔍 Analizar Fórmula
+                    </button>
+                    <button type="button" id="btn-clear-reverse" class="btn-secondary">
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error en modo inverso si la fórmula no es FBF -->
+            <div id="reverse-error-container" class="error-box hidden" role="alert">
+                <div id="reverse-error-highlight" class="error-highlight-section"></div>
+                <div id="reverse-error-explanation" class="error-explanation"></div>
+            </div>
+
+            <!-- Resultados del análisis -->
+            <div id="reverse-results-container" class="reverse-results-grid hidden">
+                
+                <!-- c) Conectivo Principal -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🌟 Conectivo Principal</span>
+                    </div>
+                    <div class="main-connective-hero">
+                        <div id="reverse-main-symbol" class="main-symbol-box symbol-present">→</div>
+                        <div class="main-conn-details">
+                            <span id="reverse-main-name" class="main-conn-title">Condicional (Implicación)</span>
+                            <p id="reverse-main-desc" class="main-conn-desc">Une dos subfórmulas como antecedente y consecuente.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- a) Proposiciones Atómicas Encontradas -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🔤 Proposiciones Atómicas</span>
+                        <span id="reverse-atoms-count" class="res-count">(0)</span>
+                    </div>
+                    <div id="reverse-atoms-list" class="atoms-badges-container"></div>
+                </div>
+
+                <!-- b) Conectivos Usados -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">⚡ Conectivos Usados</span>
+                        <span id="reverse-connectives-count" class="res-count">(0)</span>
+                    </div>
+                    <div id="reverse-connectives-list" class="connectives-container"></div>
+                </div>
+
+                <!-- f) FBF Reconstruida con Paréntesis Explícitos -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🛡️ FBF con Paréntesis Explícitos</span>
+                        <button type="button" id="btn-copy-parenthesized" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            📋 Copiar
+                        </button>
+                    </div>
+                    <div class="parenthesized-box">
+                        <span id="reverse-parenthesized-text" class="parenthesized-text">((p ∧ q) → (¬r))</span>
+                    </div>
+                </div>
+
+                <!-- e) Árbol Sintáctico (AST) - Gráfico SVG y Textual ASCII -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">🌳 Árbol Sintáctico (AST)</span>
+                        <div class="ast-view-toggle">
+                            <button type="button" id="btn-view-graph" class="view-toggle-btn active">Visual (SVG)</button>
+                            <button type="button" id="btn-view-text" class="view-toggle-btn">Texto (ASCII)</button>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor del AST SVG Gráfico -->
+                    <div id="ast-svg-container" class="ast-viewport"></div>
+
+                    <!-- Contenedor del AST Textual ASCII -->
+                    <div id="ast-text-container" class="ast-viewport hidden" style="flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+                            <button type="button" id="btn-copy-ascii" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                                📋 Copiar Árbol
+                            </button>
+                        </div>
+                        <pre id="ast-ascii-pre" class="ast-ascii-pre"></pre>
+                    </div>
+                </div>
+
+                <!-- d) Subfórmulas -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">🧩 Subfórmulas de la FBF</span>
+                        <span id="reverse-subformulas-count" class="res-count">(0)</span>
+                    </div>
+                    <p class="card-desc">Lista ordenada de menor a mayor complejidad (desde atómicas hasta la fórmula completa):</p>
+                    <div class="subformulas-table-wrapper">
+                        <table class="subformulas-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-num">#</th>
+                                    <th>Subfórmula</th>
+                                    <th>Tipo de Expresión</th>
+                                    <th>Forma Parentizada</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reverse-subformulas-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 3: ASISTENTE IA (LENGUAJE NATURAL Y EXPLICADOR)
+             ======================================================== -->
+        <section id="ai-tab" class="tab-content" role="tabpanel">
+            <div class="ai-dashboard-grid">
+                
+                <!-- SECCIÓN A: TRADUCTOR DE LENGUAJE NATURAL A FBF -->
+                <div class="builder-card ai-feature-card">
+                    <div class="ai-card-badge">Traducción Semántica</div>
+                    <h2 class="card-title">🗣️ Traductor de Lenguaje Natural a FBF</h2>
+                    <p class="card-desc">
+                        Escriba una afirmación cotidiana o condicional. La Inteligencia Artificial analizará las cláusulas, identificará las proposiciones atómicas y generará la Fórmula Bien Formada (FBF) correspondiente.
+                    </p>
+
+                    <!-- Frases de ejemplo sugeridas -->
+                    <div class="ai-quick-examples">
+                        <span class="ai-examples-label">Prueba con estas frases:</span>
+                        <div class="ai-example-tags">
+                            <button type="button" class="ai-tag-btn" data-sentence="Si llueve y no tengo paraguas, entonces me mojo">"Si llueve y no tengo paraguas, entonces me mojo"</button>
+                            <button type="button" class="ai-tag-btn" data-sentence="Estudio o trabajo, pero no me rindo">"Estudio o trabajo, pero no me rindo"</button>
+                            <button type="button" class="ai-tag-btn" data-sentence="Iré al cine si y solo si termino la tarea">"Iré al cine si y solo si termino la tarea"</button>
+                            <button type="button" class="ai-tag-btn" data-sentence="No es cierto que hace frío y llueve">"No es cierto que hace frío y llueve"</button>
+                        </div>
+                    </div>
+
+                    <!-- Input para escribir la frase -->
+                    <div class="ai-input-group">
+                        <textarea id="ai-nl-input" class="ai-textarea" rows="2" placeholder="Escriba su frase en lenguaje natural aquí... (ej: Si estudio y apruebo, entonces festejo)"></textarea>
+                        <div class="ai-input-actions">
+                            <button type="button" id="btn-ai-translate" class="btn-primary">
+                                ✨ Traducir a FBF con IA
+                            </button>
+                            <button type="button" id="btn-ai-clear-nl" class="btn-secondary">
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Resultados de la traducción -->
+                    <div id="ai-nl-results" class="ai-result-box hidden">
+                        <div class="ai-result-header">
+                            <span class="ai-result-title">Fórmula Proposicional Generada:</span>
+                            <span id="ai-source-badge" class="ai-badge-source">Motor Local Offline</span>
+                        </div>
+                        <div class="ai-formula-display">
+                            <span id="ai-generated-formula" class="ai-formula-text">(p ∧ ¬q) → r</span>
+                            <div class="ai-formula-actions">
+                                <button type="button" id="btn-copy-ai-formula" class="btn-secondary btn-sm" title="Copiar fórmula">
+                                    📋 Copiar
+                                </button>
+                                <button type="button" id="btn-ai-to-build" class="btn-primary btn-sm" title="Transferir al Constructor">
+                                    🔨 Cargar en Constructor
+                                </button>
+                                <button type="button" id="btn-ai-to-reverse" class="btn-primary btn-sm" title="Transferir al Inversor">
+                                    🔍 Analizar en Inversor
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Glosario de Atómicas -->
+                        <div class="ai-atoms-mapping">
+                            <h4>Glosario de Proposiciones Atómicas Identificadas:</h4>
+                            <div id="ai-atoms-chips" class="ai-atoms-chips-grid"></div>
+                        </div>
+
+                        <!-- Explicación de la formalización -->
+                        <div class="ai-explanation-box">
+                            <h4>Explicación de la Lógica Proposicional:</h4>
+                            <div id="ai-explanation-text" class="ai-explanation-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN B: EXPLICADOR PASO A PASO DE FBF -->
+                <div class="builder-card ai-feature-card">
+                    <div class="ai-card-badge">Tutor Didáctico</div>
+                    <h2 class="card-title">📖 Explicador Paso a Paso de FBF</h2>
+                    <p class="card-desc">
+                        Ingrese cualquier FBF para que la IA la descomponga didácticamente: cómo se lee verbalmente, cuál es el conectivo principal, la jerarquía de precedencia y las condiciones de verdad de la fórmula.
+                    </p>
+
+                    <div class="ai-input-group">
+                        <input type="text" id="ai-explain-input" class="formula-input" placeholder="Ej: ((p ∧ q) → ¬r) o p ∨ q ↔ r → s">
+                        <div class="ai-input-actions">
+                            <button type="button" id="btn-ai-explain" class="btn-primary">
+                                💡 Explicar Paso a Paso
+                            </button>
+                            <button type="button" id="btn-ai-use-current" class="btn-secondary" title="Usar fórmula que está en el Constructor">
+                                📥 Usar Fórmula del Constructor
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Resultados del Explicador -->
+                    <div id="ai-explain-results" class="ai-result-box hidden">
+                        <!-- 1. Lectura Verbal -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">🗣️ Lectura Verbal en Lenguaje Natural:</div>
+                            <p id="explain-verbal-reading" class="explain-reading-text"></p>
+                        </div>
+
+                        <!-- 2. Conectivo Principal -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">🌟 Conectivo Principal y Alcance:</div>
+                            <p id="explain-main-connective" class="explain-reading-text"></p>
+                        </div>
+
+                        <!-- 3. Pasos de Evaluación y Precedencia -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">🪜 Orden Jerárquico de Evaluación (Precedencia):</div>
+                            <div id="explain-steps-list" class="explain-steps-container"></div>
+                        </div>
+
+                        <!-- 4. Resumen Semántico Conceptual -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">⚖️ Semántica y Condiciones de Verdad:</div>
+                            <p id="explain-semantic-summary" class="explain-reading-text"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN C: CONFIGURACIÓN OPCIONAL DE IA EXTERNA (GROQ / HUGGINGFACE) -->
+                <div class="builder-card ai-feature-card" style="grid-column: 1 / -1;">
+                    <details class="ai-config-accordion">
+                        <summary class="ai-config-summary">
+                            <span>⚙️ Configuración del Motor de Inteligencia Artificial (Opcional)</span>
+                            <span class="ai-config-sub">Por defecto funciona sin internet con el motor nativo de reglas en JavaScript</span>
+                        </summary>
+                        <div class="ai-config-body">
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label for="ai-provider-select">Proveedor de IA:</label>
+                                    <select id="ai-provider-select" class="auth-input">
+                                        <option value="offline">Motor de Reglas Offline (100% Nativo sin Internet)</option>
+                                        <option value="groq">Groq Cloud API (Llama 3.3 70B - Ultra Rápido)</option>
+                                        <option value="huggingface">HuggingFace Serverless Inference API</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ai-api-key-input">API Key (Solo requerida si seleccionas Groq / HuggingFace):</label>
+                                    <input type="password" id="ai-api-key-input" class="auth-input" placeholder="gsk_... o hf_...">
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.75rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                <button type="button" id="btn-save-ai-config" class="btn-primary btn-sm">
+                                    💾 Guardar Configuración de IA
+                                </button>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 4: SUITE DE PRUEBAS UNITARIAS
+             ======================================================== -->
+        <section id="tests-tab" class="tab-content" role="tabpanel">
+            <div class="builder-card">
+                <h2 class="card-title">Suite de Pruebas Unitarias Integrada</h2>
+                <p class="card-desc">
+                    Verificación integral del Lexer, Parser, Precedencia, Asociatividad, Reconstrucción de subfórmulas y Detección de casos inválidos con posición de error.
+                </p>
+
+                <!-- Resumen de pruebas -->
+                <div class="tests-summary-bar">
+                    <div class="test-metric-card">
+                        <span id="test-summary-total" class="test-metric-val val-total">-</span>
+                        <span class="test-metric-label">Total Pruebas</span>
+                    </div>
+                    <div class="test-metric-card">
+                        <span id="test-summary-passed" class="test-metric-val val-passed">-</span>
+                        <span class="test-metric-label">Pruebas Pasadas</span>
+                    </div>
+                    <div class="test-metric-card">
+                        <span id="test-summary-failed" class="test-metric-val val-failed">-</span>
+                        <span class="test-metric-label">Pruebas Falladas</span>
+                    </div>
+                </div>
+
+                <div class="test-controls">
+                    <button type="button" id="btn-run-tests" class="btn-primary">
+                        ▶ Ejecutar Todas las Pruebas
+                    </button>
+                </div>
+
+                <!-- Lista de resultados -->
+                <div id="test-results-list" class="test-results-container">
+                    <p class="empty-hint">Haga clic en "Ejecutar Todas las Pruebas" para iniciar la suite de pruebas unitarias.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 5: PANEL DE ADMINISTRADOR (SOLO ADMIN)
+             ======================================================== -->
+        <section id="admin-tab" class="tab-content" role="tabpanel">
+            <div class="admin-dashboard-grid">
+                
+                <!-- 1. ESTADÍSTICAS GLOBALES DE LA APLICACIÓN -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">📊 Estadísticas Globales de Uso</span>
+                        <button type="button" id="btn-reset-stats" class="btn-secondary btn-sm" title="Reiniciar contadores">
+                            🔄 Reiniciar Estadísticas
+                        </button>
+                    </div>
+                    <div class="admin-stats-summary-grid">
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-number" id="stat-total-formulas">0</span>
+                            <span class="admin-stat-label">Fórmulas Construidas / Analizadas</span>
+                        </div>
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-number" id="stat-total-users">0</span>
+                            <span class="admin-stat-label">Usuarios Registrados</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1.25rem;">
+                        <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-secondary);">Conectivos más utilizados:</h4>
+                        <div class="connectives-usage-bars" id="admin-connectives-usage">
+                            <!-- Se inyectan barras de conteo dinámicas -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. GESTIÓN DE USUARIOS REGISTRADOS -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">👥 Gestión de Usuarios Registrados</span>
+                        <span class="res-count" id="admin-users-count">(0 usuarios)</span>
+                    </div>
+                    <p class="card-desc">Lista de usuarios guardados en localStorage. Como Administrador puedes cambiar contraseñas o eliminarlos del sistema.</p>
+                    
+                    <div class="subformulas-table-wrapper">
+                        <table class="subformulas-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Fecha de Registro</th>
+                                    <th>Fórmulas Creadas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-tbody">
+                                <!-- Se llena dinámicamente con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. CONFIGURACIÓN DE LA APLICACIÓN -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🛠️ Configuración General</span>
+                    </div>
+                    <form id="form-admin-config" class="admin-config-form">
+                        <div class="form-group">
+                            <label for="admin-app-title">Título de la Aplicación:</label>
+                            <input type="text" id="admin-app-title" class="auth-input" value="Constructor de Proposiciones Moleculares">
+                        </div>
+                        <div class="form-group">
+                            <label class="toggle-label">
+                                <span>Modo Oscuro Global por Defecto:</span>
+                                <input type="checkbox" id="admin-dark-mode-toggle" checked>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-change-master-pass">Nueva Contraseña Maestra de Admin:</label>
+                            <input type="password" id="admin-change-master-pass" class="auth-input" placeholder="Dejar vacío para no cambiar">
+                        </div>
+                        <button type="submit" class="btn-primary btn-sm">
+                            💾 Guardar Configuración
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 4. GESTOR DE EJEMPLOS PREDEFINIDOS -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">💡 Gestión de Ejemplos Predefinidos</span>
+                    </div>
+                    <p class="card-desc">Añade o elimina las fórmulas que aparecen en la barra de ejemplos de toda la app:</p>
+
+                    <div class="add-example-group">
+                        <input type="text" id="admin-new-example-input" class="auth-input" placeholder="Nueva fórmula (ej: p ∧ q → r)">
+                        <button type="button" id="btn-admin-add-example" class="btn-primary btn-sm">
+                            ➕ Añadir
+                        </button>
+                    </div>
+
+                    <div class="admin-examples-list" id="admin-examples-list">
+                        <!-- Lista de ejemplos con botón de eliminar -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL PARA CAMBIAR CONTRASEÑA DE UN USUARIO (ADMIN) -->
+    <div id="modal-change-pass" class="auth-overlay hidden">
+        <div class="auth-modal" style="max-width: 420px;">
+            <div class="auth-header">
+                <h3 class="auth-title">Cambiar Contraseña de Usuario</h3>
+                <p class="auth-subtitle" id="modal-user-target">Usuario: -</p>
+            </div>
+            <form id="form-modal-change-pass">
+                <input type="hidden" id="modal-user-id">
+                <div class="form-group">
+                    <label for="modal-new-password">Nueva Contraseña</label>
+                    <input type="password" id="modal-new-password" class="auth-input" placeholder="Mínimo 4 caracteres" required>
+                </div>
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="button" id="btn-modal-cancel-pass" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- PIE DE PÁGINA (FOOTER) CON REGLAS DE PRECEDENCIA -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <div>
+                <strong id="footer-app-title">Constructor de Proposiciones Moleculares</strong> • Vanilla HTML5 / CSS3 / JavaScript
+            </div>
+            <ul class="footer-rules" aria-label="Reglas de precedencia">
+                <li>1. ¬ (Mayor, der)</li>
+                <li>2. ∧ (Izq)</li>
+                <li>3. ∨ (Izq)</li>
+                <li>4. → (Der)</li>
+                <li>5. ↔ (Menor, izq)</li>
+            </ul>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS MODULARES -->
+    <script src="lexer.js"></script>
+    <script src="ast.js"></script>
+    <script src="parser.js"></script>
+    <script src="auth.js"></script>
+    <script src="ai.js"></script>
+    <script src="tests.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html>
