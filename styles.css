@@ -2002,3 +2002,170 @@ body {
 .hidden {
     display: none !important;
 }
+
+/* ========================================================
+   ESTILOS DEL DICCIONARIO DE PROPOSICIONES Y TRADUCCIÓN
+   ======================================================== */
+.semantic-translation-box {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid var(--accent-indigo);
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1.15rem;
+    margin-bottom: 1.25rem;
+    transition: all 0.2s ease;
+}
+
+[data-theme="light"] .semantic-translation-box {
+    background: #eef2ff;
+    border-color: #818cf8;
+}
+
+.semantic-translation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.45rem;
+}
+
+.semantic-translation-title {
+    font-size: 0.825rem;
+    font-weight: 700;
+    color: var(--accent-indigo);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.semantic-translation-content {
+    font-family: var(--font-sans);
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text-primary);
+    min-height: 28px;
+    word-break: break-word;
+}
+
+.semantic-translation-content .dict-meaning-highlight {
+    color: #38bdf8;
+    font-weight: 600;
+}
+
+.semantic-translation-content .dict-connective-highlight {
+    color: var(--accent-indigo);
+    font-weight: 800;
+    font-family: var(--font-mono);
+}
+
+.btn-xs {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.semantic-translation-box-reverse {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+}
+
+[data-theme="light"] .semantic-translation-box-reverse {
+    background: #f1f5f9;
+}
+
+.semantic-translation-text-reverse {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #38bdf8;
+    font-weight: 600;
+}
+
+/* Formulario del Diccionario */
+.dict-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.dict-form-card {
+    position: relative;
+}
+
+.dict-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-top: 1rem;
+}
+
+.dict-form-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.dict-letter-group {
+    width: 110px;
+}
+
+.dict-meaning-group {
+    flex: 1;
+    min-width: 240px;
+}
+
+.dict-letter-input {
+    width: 100%;
+    height: 48px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: #34d399;
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.dict-letter-input:focus {
+    border-color: var(--accent-emerald);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.dict-meaning-input {
+    height: 48px;
+}
+
+.dict-form-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.dict-table-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dict-letter-badge {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(4, 120, 87, 0.25));
+    border: 1px solid var(--accent-emerald);
+    color: #34d399;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 1.1rem;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dict-meaning-cell {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+

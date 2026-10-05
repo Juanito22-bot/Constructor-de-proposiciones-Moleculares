@@ -38,10 +38,11 @@ Aplicación web desarrollada con **HTML5, CSS3 y JavaScript Vanilla** (sin frame
     - *"Iré al cine si y solo si termino la tarea"* $\to$ `p ↔ q`
     - *"No es cierto que hace frío y llueve"* $\to$ `¬(p ∧ q)`
   - Desglosa las proposiciones atómicas identificadas ($p, q, r\dots$) con su significado en texto.
+  - Prioriza y utiliza las definiciones guardadas en el **Diccionario de Proposiciones** para formalizaciones más consistentes.
   - Botones para transferir la fórmula traducida directamente al **Constructor** o al **Inversor**.
 - **Explicador Paso a Paso de FBF**:
   - Descompone cualquier fórmula en:
-    1. **Lectura verbal** en lenguaje natural formal.
+    1. **Lectura verbal** en lenguaje natural formal e **Interpretación Semántica con Diccionario**.
     2. **Conectivo principal** y alcance de la proposición molecular.
     3. **Pasos jerárquicos de evaluación** según la precedencia formal.
     4. **Semántica y condiciones de verdad** (cuándo es Verdadera o Falsa según tablas de verdad).
@@ -49,22 +50,43 @@ Aplicación web desarrollada con **HTML5, CSS3 y JavaScript Vanilla** (sin frame
   - **100% Funcional Offline**: Motor de reglas lingüísticas en JavaScript (sin requerir internet ni claves).
   - **Conexión Opcional a APIs**: Compatible con Groq (Llama 3.3 70B) o HuggingFace Serverless Inference API vía `fetch`.
 
-### 4. Modo Construir (Constructor de FBF)
+### 4. Diccionario de Proposiciones - Glosario Semántico (`📖 Diccionario` / `dictionary.js`)
+- **Asignación de Significados**:
+  - Asigna significados en lenguaje natural a letras proposicionales ($p, q, r, s\dots$).
+  - Validación de letra única ($a-z$) y detección de duplicados con diálogo de confirmación para sobrescribir.
+  - Persistencia local en `localStorage` bajo la clave `propositionDictionary` (formato JSON: `{"p": "Cuando quiere comer", "q": "manzanas"}`).
+- **Gestión Integral**:
+  - Tabla dinámica y responsiva con visualización de badges para cada letra y comillas para significados.
+  - Botón **✏️ Editar**: Carga la definición en el formulario con la letra bloqueada para actualizar el texto.
+  - Botón **🗑️ Eliminar**: Elimina la definición individual con confirmación.
+  - Botón **🗑️ Vaciar Diccionario**: Limpia todas las definiciones registradas tras confirmación previa.
+- **Traducción Semántica Automatizada**:
+  - Reemplazo inteligente de conectivos al español:
+    - $\land \to$ **Y**
+    - $\lor \to$ **O**
+    - $\neg \to$ **NO**
+    - $\to \to$ **SI ... ENTONCES ...**
+    - $\leftrightarrow \to$ **SI Y SOLO SI**
+  - Mantiene letras en su formato original si aún no han sido registradas en el diccionario.
+
+### 5. Modo Construir (Constructor de FBF)
 - Inserción con teclado virtual ordenado por precedencia o escritura directa con teclado físico.
 - Validación sintáctica en tiempo real.
+- **Traducción al Español en Tiempo Real**: Recuadro situado bajo la FBF construida que traduce dinámicamente las letras y conectivos con base en el Diccionario semántico.
 - Diagnóstico de error con puntero visual exacto `▲`, posición y sugerencia didáctica.
 - Historial de Deshacer (`Ctrl+Z`) y Rehacer (`Ctrl+Y`).
 
-### 5. Modo Inverso (Descompositor Sintáctico)
+### 6. Modo Inverso (Descompositor Sintáctico)
 - Desglose completo de cualquier fórmula ingresada:
   - a) Proposiciones atómicas encontradas.
   - b) Conectivos usados y frecuencia.
   - c) Conectivo principal destacado.
-  - d) Tabla de subfórmulas ordenada por complejidad.
-  - e) Árbol sintáctico (**AST Gráfico en SVG nativo interactivo** y **AST Textual en ASCII/Unicode**).
-  - f) FBF reconstruida con paréntesis explícitos.
+  - d) **Interpretación Semántica (con Diccionario)**: Sección dedicada con la traducción completa de la FBF al español y botón para copiar al portapapeles.
+  - e) Tabla de subfórmulas ordenada por complejidad.
+  - f) Árbol sintáctico (**AST Gráfico en SVG nativo interactivo** y **AST Textual en ASCII/Unicode**).
+  - g) FBF reconstruida con paréntesis explícitos.
 
-### 6. Precedencia y Asociatividad Estrictas
+### 7. Precedencia y Asociatividad Estrictas
 1. $\neg$ (**Negación**): Mayor precedencia, unario prefijo, asocia a la **derecha** ($\neg\neg p \equiv \neg(\neg p)$).
 2. $\land$ (**Conjunción**): Mayor precedencia que $\lor$, asocia a la **izquierda** ($p \land q \land r \equiv (p \land q) \land r$).
 3. $\lor$ (**Disyunción**): Mayor precedencia que $\to$, asocia a la **izquierda** ($p \lor q \lor r \equiv (p \lor q) \lor r$).
@@ -79,14 +101,15 @@ Aplicación web desarrollada con **HTML5, CSS3 y JavaScript Vanilla** (sin frame
 ```text
 c:\Tarea\
 ├── index.html       # Estructura semántica, accesibilidad, modales y pestañas
-├── styles.css       # Diseño moderno, temas claro/oscuro, paneles de IA y Admin
+├── styles.css       # Diseño moderno, temas claro/oscuro, glosario semántico y paneles
 ├── lexer.js         # Analizador léxico (Tokenización, posiciones, alias)
 ├── parser.js        # Analizador sintáctico por descenso recursivo con precedencia
 ├── ast.js           # Modelado del AST, subfórmulas, árbol ASCII y renderizador SVG
 ├── auth.js          # Sistema de login, registro, admin maestro y localStorage
+├── dictionary.js    # Glosario semántico, persistencia propositionDictionary y traducción
 ├── ai.js            # Motor de IA de lenguaje natural, explicador y conexión fetch
 ├── ui.js            # Controlador integral del DOM, eventos, sincronización y vistas
-├── tests.js         # Suite de 42 pruebas unitarias automatizadas
+├── tests.js         # Suite de 51 pruebas unitarias automatizadas (8 categorías)
 ├── package.json     # Metadatos del proyecto y script npm test
 └── README.md        # Documentación técnica completa
 ```
@@ -135,17 +158,41 @@ c:\Tarea\
 5. **Estadísticas**:
    - Visualiza el contador de fórmulas construidas y las barras de frecuencia de conectivos.
 
-### 3. Probar el Módulo de Inteligencia Artificial:
+### 3. Probar el Diccionario de Proposiciones (Glosario Semántico):
+1. Haz clic en la pestaña **"📖 Diccionario"**.
+2. **Crear una definición**:
+   - En **Letra**, escribe `p`.
+   - En **Significado**, escribe `Cuando quiere comer`.
+   - Pulsa **"💾 Guardar en Diccionario"**.
+   - Si la letra ya existía, el sistema te preguntará mediante un diálogo si deseas sobrescribir su significado.
+   - Agrega otra definición: Letra `q`, Significado `manzanas`.
+3. **Editar y Eliminar**:
+   - En la tabla de proposiciones, pulsa **"✏️ Editar"** en cualquiera de las filas para modificar su texto.
+   - Pulsa **"🗑️ Eliminar"** para remover una definición individual.
+   - Pulsa **"🗑️ Vaciar Diccionario"** (con confirmación) para reiniciar el glosario.
+4. **Reflejo en el Constructor**:
+   - Ve a la pestaña **"🔨 Constructor"**.
+   - Escribe o construye con los botones la fórmula `p ∧ q`.
+   - Observa inmediatamente debajo de la FBF el recuadro **"Traducción al Español"**: mostrará `"Cuando quiere comer" Y "manzanas"`.
+   - Si escribes `p ∧ r` (donde `r` no está en el diccionario), se conservará la letra original: `"Cuando quiere comer" Y r`.
+   - Prueba con otros conectivos como `p → q`: verás `SI "Cuando quiere comer" ENTONCES "manzanas"`.
+5. **Reflejo en el Inversor**:
+   - Ve a la pestaña **"🔍 Inversor"**.
+   - Ingresa `(p ∧ q) → r` y pulsa **"🔍 Analizar Fórmula"**.
+   - En el panel de resultados, verás la tarjeta **"📖 Interpretación Semántica (con Diccionario)"** mostrando:
+     `SI "Cuando quiere comer" Y "manzanas" ENTONCES r` con un botón rápido para copiar la traducción al portapapeles.
+
+### 4. Probar el Módulo de Inteligencia Artificial:
 1. Ve a la pestaña **"🤖 Asistente IA"**.
 2. **Traductor**:
    - Haz clic en cualquiera de las frases de ejemplo (ej: *"Si llueve y no tengo paraguas, entonces me mojo"*).
    - Pulsa **"✨ Traducir a FBF con IA"**.
-   - La IA generará la fórmula `(p ∧ ¬q) → r`, el glosario de proposiciones atómicas y la explicación lógica.
+   - La IA generará la fórmula `(p ∧ ¬q) → r`, el glosario de proposiciones atómicas y la explicación lógica (considerando las definiciones del diccionario).
    - Pulsa **"🔨 Cargar en Constructor"** para llevar la fórmula directamente al editor interactivo.
 3. **Explicador Paso a Paso**:
    - En la sección derecha, escribe una fórmula (o pulsa *"📥 Usar Fórmula del Constructor"*).
-   - Pulsa **"💡 Explicar Paso a Paso"** para ver la lectura en lenguaje natural, el conectivo principal, los pasos jerárquicos de precedencia y las condiciones de verdad.
+   - Pulsa **"💡 Explicar Paso a Paso"** para ver la lectura en lenguaje natural formal, la **interpretación con el diccionario semántico**, el conectivo principal, los pasos jerárquicos de precedencia y las condiciones de verdad.
 
-### 4. Ejecución de la Suite de Pruebas Unitarias:
-- **Desde la app**: Ve a la pestaña **"🧪 Suite de Pruebas"** y haz clic en **"▶ Ejecutar Todas las Pruebas"**. Se ejecutarán las **42 pruebas unitarias** (Lexer, Parser, Precedencia, Asociatividad, Modo Inverso, Autenticación y Módulo de IA), alcanzando el **100% de aprobadas**.
+### 5. Ejecución de la Suite de Pruebas Unitarias:
+- **Desde la app**: Ve a la pestaña **"🧪 Suite de Pruebas"** y haz clic en **"▶ Ejecutar Todas las Pruebas"**. Se ejecutarán las **51 pruebas unitarias** divididas en 8 categorías (Lexer, Parser, Precedencia, Asociatividad, Modo Inverso, Autenticación, Módulo de IA y Diccionario de Proposiciones), alcanzando el **100% de aprobadas (51/51)**.
 - **Desde terminal**: Si tienes Node.js instalado, ejecuta `node tests.js`.

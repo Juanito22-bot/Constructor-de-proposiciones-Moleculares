@@ -21,7 +21,7 @@ if (typeof localStorage === 'undefined') {
 }
 
 // Importaciones según entorno (Node.js o Navegador)
-let _lexerMod, _parserMod, _astMod, _authMod, _aiMod;
+let _lexerMod, _parserMod, _astMod, _authMod, _aiMod, _dictMod;
 
 if (typeof require !== 'undefined') {
     _lexerMod = require('./lexer.js');
@@ -29,6 +29,7 @@ if (typeof require !== 'undefined') {
     _parserMod = require('./parser.js');
     _authMod = require('./auth.js');
     _aiMod = require('./ai.js');
+    _dictMod = require('./dictionary.js');
 } else {
     _lexerMod = {
         Lexer: window.Lexer,
@@ -51,6 +52,7 @@ if (typeof require !== 'undefined') {
     };
     _authMod = window.Auth;
     _aiMod = window.AI;
+    _dictMod = window.PropositionDictionary;
 }
 
 /**
@@ -589,6 +591,114 @@ function createTestSuite() {
         runner.assertEqual(res.mainConnectiveInfo.symbol, '→', 'Conectivo principal debe ser →');
         runner.assert(res.precedenceSteps.length >= 2, 'Debe tener pasos de precedencia');
         runner.assert(res.semanticSummary.includes('Condicional'), 'Debe resumir el significado del condicional');
+    });
+
+    // ========================================================
+    // 8. DICCIONARIO DE PROPOSICIONES (GLOSARIO SEMÁNTICO)
+    // ========================================================
+    runner.category('8. Diccionario de Proposiciones (Glosario Semántico)');
+
+    runner.test('Valida que la letra proposicional sea una sola letra a-z', () => {
+        runner.assert(_dictMod.isValidLetter('p'), 'p debe ser válida');
+        runner.assert(_dictMod.isValidLetter('q'), 'q debe ser válida');
+        runner.assert(_dictMod.isValidLetter('P'), 'P debe ser válida');
+        runner.assert(!_dictMod.isValidLetter('pq'), 'pq no debe ser válida');
+        runner.assert(!_dictMod.isValidLetter('1'), '1 no debe ser válida');
+        runner.assert(!_dictMod.isValidLetter(''), 'vacío no debe ser válido');
+        runner.assert(!_dictMod.isValidLetter(null), 'null no debe ser válido');
+    });
+
+    runner.test('Guarda y recupera definiciones en localStorage (clave propositionDictionary)', () => {
+        _dictMod.setDefinition('p', 'Cuando quiere comer');
+        _dictMod.setDefinition('q', 'manzanas');
+
+        const dict = _dictMod.getDictionary();
+        runner.assertEqual(dict['p'], 'Cuando quiere comer', 'Definición de p debe coincidir');
+        runner.assertEqual(dict['q'], 'manzanas', 'Definición de q debe coincidir');
+
+        const raw = localStorage.getItem('propositionDictionary');
+        runner.assert(raw !== null, 'Debe persistir en localStorage bajo propositionDictionary');
+        const parsed = JSON.parse(raw);
+        runner.assertEqual(parsed['p'], 'Cuando quiere comer');
+    });
+
+    runner.test('Sobrescribe definición existente tras actualización', () => {
+        _dictMod.setDefinition('p', 'Primera versión');
+        runner.assertEqual(_dictMod.getDictionary()['p'], 'Primera versión');
+        _dictMod.setDefinition('p', 'Cuando quiere comer');
+        runner.assertEqual(_dictMod.getDictionary()['p'], 'Cuando quiere comer');
+    });
+
+    runner.test('Rechaza guardar con letra inválida o significado vacío', () => {
+        const res1 = _dictMod.setDefinition('123', 'Significado');
+        runner.assert(!res1.success, 'Debe fallar con letra inválida');
+
+        const res2 = _dictMod.setDefinition('p', '');
+        runner.assert(!res2.success, 'Debe fallar con significado vacío');
+    });
+
+    runner.test('Elimina una definición del diccionario por letra', () => {
+        _dictMod.setDefinition('z', 'dormir profundamente');
+        runner.assert(_dictMod.getDictionary()['z'] !== undefined);
+        const removed = _dictMod.removeDefinition('z');
+        runner.assert(removed, 'removeDefinition debe retornar true');
+        runner.assert(_dictMod.getDictionary()['z'] === undefined, 'z no debe existir tras ser eliminada');
+    });
+
+    runner.test('Traduce fórmula FBF reemplazando proposiciones y conectivos al español', () => {
+        _dictMod.setDefinition('p', 'Cuando quiere comer');
+        _dictMod.setDefinition('q', 'manzanas');
+
+        // Conjunción ∧ -> Y
+        const tr1 = _dictMod.translateFormulaToSpanish('p ∧ q');
+        runner.assertEqual(tr1, '"Cuando quiere comer" Y "manzanas"');
+
+        // Disyunción ∨ -> O
+        const tr2 = _dictMod.translateFormulaToSpanish('p ∨ q');
+        runner.assertEqual(tr2, '"Cuando quiere comer" O "manzanas"');
+
+        // Negación ¬ -> NO
+        const tr3 = _dictMod.translateFormulaToSpanish('¬p');
+        runner.assertEqual(tr3, 'NO "Cuando quiere comer"');
+
+        // Condicional → -> SI ... ENTONCES ...
+        const tr4 = _dictMod.translateFormulaToSpanish('p → q');
+        runner.assertEqual(tr4, 'SI "Cuando quiere comer" ENTONCES "manzanas"');
+
+        // Bicondicional ↔ -> SI Y SOLO SI
+        const tr5 = _dictMod.translateFormulaToSpanish('p ↔ q');
+        runner.assertEqual(tr5, '"Cuando quiere comer" SI Y SOLO SI "manzanas"');
+    });
+
+    runner.test('Mantiene letras originales si no están definidas en el diccionario', () => {
+        _dictMod.setDefinition('p', 'Cuando quiere comer');
+        _dictMod.removeDefinition('r');
+
+        const tr = _dictMod.translateFormulaToSpanish('p ∧ r');
+        runner.assertEqual(tr, '"Cuando quiere comer" Y r');
+    });
+
+    runner.test('Vacía completamente el diccionario con clearDictionary', () => {
+        _dictMod.setDefinition('p', 'Comer');
+        _dictMod.clearDictionary();
+        const dict = _dictMod.getDictionary();
+        runner.assertEqual(Object.keys(dict).length, 0, 'Diccionario debe quedar vacío');
+
+        // Restaurar valores por defecto para uso posterior
+        _dictMod.setDefinition('p', 'Cuando quiere comer');
+        _dictMod.setDefinition('q', 'manzanas');
+        _dictMod.setDefinition('r', 'tiene hambre');
+    });
+
+    runner.test('Integración con el Explicador IA incluye traducción semántica del diccionario', () => {
+        _dictMod.setDefinition('p', 'Cuando quiere comer');
+        _dictMod.setDefinition('q', 'manzanas');
+
+        const res = _aiMod.explainFormulaStepByStep('p ∧ q');
+        runner.assert(res.success);
+        runner.assert(res.dictionaryTranslation !== undefined && res.dictionaryTranslation !== '');
+        runner.assert(res.dictionaryTranslation.includes('Cuando quiere comer'));
+        runner.assert(res.dictionaryTranslation.includes('manzanas'));
     });
 
     return runner;

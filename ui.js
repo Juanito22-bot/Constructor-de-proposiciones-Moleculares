@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initBuildMode();
     initReverseMode();
+    initDictionary();
     initAIAssistant();
     initAdminPanel();
     initDynamicExamples();
@@ -331,6 +332,10 @@ function switchTab(tabId) {
     } else if (tabId === 'reverse-tab') {
         const input = document.getElementById('reverse-input');
         if (input) input.focus();
+    } else if (tabId === 'dict-tab') {
+        if (typeof renderDictionaryTable === 'function') renderDictionaryTable();
+        const input = document.getElementById('dict-letter-input');
+        if (input) input.focus();
     } else if (tabId === 'ai-tab') {
         const input = document.getElementById('ai-nl-input');
         if (input) input.focus();
@@ -477,6 +482,17 @@ function initBuildMode() {
         });
     }
 
+    const copyTranslationBtn = document.getElementById('btn-copy-build-translation');
+    if (copyTranslationBtn) {
+        copyTranslationBtn.addEventListener('click', () => {
+            const el = document.getElementById('build-translation-text');
+            if (el && el.innerText && !el.querySelector('.empty-hint')) {
+                navigator.clipboard.writeText(el.innerText);
+                showToast('¡Traducción al español copiada!');
+            }
+        });
+    }
+
     if (transferBtn) {
         transferBtn.addEventListener('click', () => {
             const formula = input.value.trim();
@@ -595,6 +611,7 @@ function updateBuildView() {
         errorContainer.classList.add('hidden');
         tokensContainer.innerHTML = '<span class="empty-hint">La fórmula está vacía. Use los botones o escriba una expresión.</span>';
         if (transferBtn) transferBtn.disabled = true;
+        updateBuildTranslation('');
         return;
     }
 
@@ -633,6 +650,31 @@ function updateBuildView() {
         `;
 
         tokensContainer.innerHTML = '<span class="empty-hint">Corrija la fórmula para visualizar los tokens completos.</span>';
+    }
+
+    // Actualizar recuadro de traducción al español con el Diccionario
+    updateBuildTranslation(formulaStr);
+}
+
+function updateBuildTranslation(formulaStr) {
+    const translationEl = document.getElementById('build-translation-text');
+    if (!translationEl) return;
+
+    if (!formulaStr || !formulaStr.trim()) {
+        translationEl.innerHTML = '<span class="empty-hint">Escriba una fórmula para ver su traducción al español con las palabras del diccionario...</span>';
+        return;
+    }
+
+    if (window.PropositionDictionary) {
+        const spanish = window.PropositionDictionary.translateFormulaToSpanish(formulaStr);
+        if (spanish) {
+            const formatted = escapeHtml(spanish)
+                .replace(/&quot;(.*?)&quot;/g, '<span class="dict-meaning-highlight">"$1"</span>')
+                .replace(/\b(SI Y SOLO SI|SI|ENTONCES|Y|O|NO)\b/g, '<span class="dict-connective-highlight">$1</span>');
+            translationEl.innerHTML = formatted;
+        } else {
+            translationEl.innerHTML = '<span class="empty-hint">Sin traducción disponible.</span>';
+        }
     }
 }
 
@@ -750,6 +792,17 @@ function initReverseMode() {
             }
         });
     }
+
+    const copyReverseTranslationBtn = document.getElementById('btn-copy-reverse-translation');
+    if (copyReverseTranslationBtn) {
+        copyReverseTranslationBtn.addEventListener('click', () => {
+            const el = document.getElementById('reverse-translation-text');
+            if (el && el.textContent) {
+                navigator.clipboard.writeText(el.textContent);
+                showToast('¡Interpretación semántica copiada!');
+            }
+        });
+    }
 }
 
 function analyzeReverseFormula() {
@@ -862,6 +915,13 @@ function analyzeReverseFormula() {
     const fullyParenthesized = window.toFullyParenthesized(ast);
     const fullyParenthesizedEl = document.getElementById('reverse-parenthesized-text');
     fullyParenthesizedEl.textContent = fullyParenthesized;
+
+    // g) Interpretación semántica con el diccionario
+    const reverseTranslationEl = document.getElementById('reverse-translation-text');
+    if (reverseTranslationEl && window.PropositionDictionary) {
+        const spanish = window.PropositionDictionary.translateFormulaToSpanish(formulaStr);
+        reverseTranslationEl.textContent = spanish || 'Sin interpretación disponible.';
+    }
 }
 
 function hideReverseResults() {
@@ -870,6 +930,200 @@ function hideReverseResults() {
     if (errorContainer) errorContainer.classList.add('hidden');
     if (resultsContainer) resultsContainer.classList.add('hidden');
 }
+
+// ========================================================
+// 5.1. DICCIONARIO DE PROPOSICIONES (GLOSARIO SEMÁNTICO)
+// ========================================================
+function initDictionary() {
+    const form = document.getElementById('form-dict-definition');
+    const letterInput = document.getElementById('dict-letter-input');
+    const meaningInput = document.getElementById('dict-meaning-input');
+    const cancelBtn = document.getElementById('btn-dict-cancel');
+    const clearAllBtn = document.getElementById('btn-dict-clear-all');
+    const editModeInput = document.getElementById('dict-edit-mode');
+
+    // Renderizar tabla inicial
+    renderDictionaryTable();
+
+    // Guardar o actualizar definición
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const letter = (letterInput ? letterInput.value : '').trim().toLowerCase();
+            const meaning = (meaningInput ? meaningInput.value : '').trim();
+
+            if (!letter || !/^[a-z]$/.test(letter)) {
+                showToast('La letra debe ser una sola letra del alfabeto (ej: p, q, r, s).');
+                return;
+            }
+
+            if (!meaning) {
+                showToast('Debe ingresar un significado en lenguaje natural.');
+                return;
+            }
+
+            const dict = window.PropositionDictionary ? window.PropositionDictionary.getDictionary() : {};
+            const isEditing = editModeInput && editModeInput.value === letter;
+
+            // Validación de duplicado: si ya existe y no estamos en modo edición de la misma letra
+            if (!isEditing && dict[letter] !== undefined) {
+                const overwrite = confirm(`La letra "${letter}" ya está definida como "${dict[letter]}". ¿Desea sobrescribir su significado?`);
+                if (!overwrite) return;
+            }
+
+            const res = window.PropositionDictionary.setDefinition(letter, meaning);
+            if (res.success) {
+                showToast(res.message);
+                form.reset();
+                if (editModeInput) editModeInput.value = '';
+                if (letterInput) letterInput.disabled = false;
+                if (cancelBtn) cancelBtn.classList.add('hidden');
+                const saveBtn = document.getElementById('btn-dict-save');
+                if (saveBtn) saveBtn.textContent = '💾 Guardar en Diccionario';
+
+                renderDictionaryTable();
+
+                // Actualizar traducciones en vivo si hay fórmulas en Constructor o Inversor
+                const currentBuild = document.getElementById('build-input')?.value;
+                if (currentBuild) updateBuildTranslation(currentBuild);
+
+                const currentReverse = document.getElementById('reverse-input')?.value;
+                if (currentReverse && !document.getElementById('reverse-results-container')?.classList.contains('hidden')) {
+                    const revTr = document.getElementById('reverse-translation-text');
+                    if (revTr) revTr.textContent = window.PropositionDictionary.translateFormulaToSpanish(currentReverse);
+                }
+            } else {
+                showToast(res.message);
+            }
+        });
+    }
+
+    // Cancelar edición
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            if (form) form.reset();
+            if (editModeInput) editModeInput.value = '';
+            if (letterInput) {
+                letterInput.disabled = false;
+                letterInput.focus();
+            }
+            cancelBtn.classList.add('hidden');
+            const saveBtn = document.getElementById('btn-dict-save');
+            if (saveBtn) saveBtn.textContent = '💾 Guardar en Diccionario';
+        });
+    }
+
+    // Vaciar diccionario completo
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', () => {
+            const ok = confirm('¿Está seguro de que desea vaciar todas las definiciones del diccionario?');
+            if (ok) {
+                window.PropositionDictionary.clearDictionary();
+                renderDictionaryTable();
+                showToast('El diccionario ha sido vaciado.');
+
+                const currentBuild = document.getElementById('build-input')?.value;
+                if (currentBuild) updateBuildTranslation(currentBuild);
+
+                const currentReverse = document.getElementById('reverse-input')?.value;
+                if (currentReverse) {
+                    const revTr = document.getElementById('reverse-translation-text');
+                    if (revTr) revTr.textContent = window.PropositionDictionary.translateFormulaToSpanish(currentReverse);
+                }
+            }
+        });
+    }
+}
+
+/**
+ * Renderiza la tabla de proposiciones del diccionario
+ */
+function renderDictionaryTable() {
+    const tbody = document.getElementById('dict-table-tbody');
+    const countBadge = document.getElementById('dict-count-badge');
+    if (!tbody || !window.PropositionDictionary) return;
+
+    const dict = window.PropositionDictionary.getDictionary();
+    const entries = Object.entries(dict).sort((a, b) => a[0].localeCompare(b[0]));
+
+    if (countBadge) {
+        countBadge.textContent = `(${entries.length} ${entries.length === 1 ? 'definición' : 'definiciones'})`;
+    }
+
+    if (entries.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" class="empty-hint" style="text-align: center; padding: 1.5rem;">
+                    El diccionario está vacío. Añada una letra y su significado para comenzar.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = entries.map(([letter, meaning]) => `
+        <tr>
+            <td>
+                <span class="dict-letter-badge">${escapeHtml(letter)}</span>
+            </td>
+            <td>
+                <span class="dict-meaning-cell">"${escapeHtml(meaning)}"</span>
+            </td>
+            <td style="text-align: right;">
+                <div style="display: flex; gap: 0.4rem; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary btn-sm" onclick="editDictionaryDefinition('${escapeHtml(letter)}')">
+                        ✏️ Editar
+                    </button>
+                    <button type="button" class="btn-danger btn-sm" onclick="deleteDictionaryDefinition('${escapeHtml(letter)}')">
+                        🗑️ Eliminar
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Funciones globales expuestas para las filas de la tabla del diccionario
+window.editDictionaryDefinition = function(letter) {
+    if (!window.PropositionDictionary) return;
+    const dict = window.PropositionDictionary.getDictionary();
+    const meaning = dict[letter];
+    if (meaning === undefined) return;
+
+    const letterInput = document.getElementById('dict-letter-input');
+    const meaningInput = document.getElementById('dict-meaning-input');
+    const editModeInput = document.getElementById('dict-edit-mode');
+    const cancelBtn = document.getElementById('btn-dict-cancel');
+    const saveBtn = document.getElementById('btn-dict-save');
+
+    if (letterInput && meaningInput) {
+        letterInput.value = letter;
+        letterInput.disabled = true; // Mantener bloqueada la letra durante edición
+        meaningInput.value = meaning;
+        if (editModeInput) editModeInput.value = letter;
+        if (cancelBtn) cancelBtn.classList.remove('hidden');
+        if (saveBtn) saveBtn.textContent = '💾 Actualizar Definición';
+        meaningInput.focus();
+        showToast(`Editando definición de "${letter}".`);
+    }
+};
+
+window.deleteDictionaryDefinition = function(letter) {
+    if (confirm(`¿Eliminar la definición de la letra "${letter}"?`)) {
+        window.PropositionDictionary.removeDefinition(letter);
+        renderDictionaryTable();
+        showToast(`Definición para "${letter}" eliminada.`);
+
+        const currentBuild = document.getElementById('build-input')?.value;
+        if (currentBuild) updateBuildTranslation(currentBuild);
+
+        const currentReverse = document.getElementById('reverse-input')?.value;
+        if (currentReverse && !document.getElementById('reverse-results-container')?.classList.contains('hidden')) {
+            const revTr = document.getElementById('reverse-translation-text');
+            if (revTr) revTr.textContent = window.PropositionDictionary.translateFormulaToSpanish(currentReverse);
+        }
+    }
+};
 
 // ========================================================
 // 6. MÓDULO DE INTELIGENCIA ARTIFICIAL (AI ASSISTANT)
@@ -1033,7 +1287,11 @@ function initAIAssistant() {
             explainResults.classList.remove('hidden');
 
             // 1. Lectura verbal
-            verbalReadingEl.textContent = res.verbalReading || 'Proposición simple';
+            if (res.dictionaryTranslation) {
+                verbalReadingEl.innerHTML = `${escapeHtml(res.verbalReading || 'Proposición simple')}<div class="explain-dict-interpretation" style="margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px dashed var(--border-color, #334155); font-size: 0.95rem; color: var(--accent-light, #38bdf8);"><strong>📖 Con Diccionario Semántico:</strong> ${escapeHtml(res.dictionaryTranslation)}</div>`;
+            } else {
+                verbalReadingEl.textContent = res.verbalReading || 'Proposición simple';
+            }
 
             // 2. Conectivo principal
             const mc = res.mainConnectiveInfo;

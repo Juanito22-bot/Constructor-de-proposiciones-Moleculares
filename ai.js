@@ -102,8 +102,15 @@ function translateNaturalLanguageOffline(sentence) {
 
     const norm = normalizeSentence(original);
     const atomList = [];
-    let atomIndex = 0;
     const atomLetters = ['p', 'q', 'r', 's', 't', 'u', 'v', 'w'];
+    let atomIndex = 0;
+
+    // Obtener diccionario actual para priorizar letras asignadas
+    let dict = {};
+    try {
+        const rawDict = localStorage.getItem('propositionDictionary');
+        if (rawDict) dict = JSON.parse(rawDict);
+    } catch (e) {}
 
     function registerAtom(clauseText) {
         let clean = clauseText.trim();
@@ -111,10 +118,25 @@ function translateNaturalLanguageOffline(sentence) {
         clean = clean.replace(/^(entonces|que|de|a|el|la|los|las)\s+/i, '');
         if (!clean) clean = 'condición ' + (atomIndex + 1);
 
-        // Buscar si ya existe una cláusula muy similar
+        // 1. Verificar si coincide con alguna definición existente en el diccionario
+        for (const [dictLetter, dictMeaning] of Object.entries(dict)) {
+            const dNorm = dictMeaning.toLowerCase().trim();
+            if (clean.toLowerCase() === dNorm || clean.toLowerCase().includes(dNorm) || dNorm.includes(clean.toLowerCase())) {
+                const existing = atomList.find(a => a.letter === dictLetter);
+                if (existing) return existing.letter;
+                atomList.push({ letter: dictLetter, text: clean });
+                return dictLetter;
+            }
+        }
+
+        // Buscar si ya existe una cláusula muy similar en esta traducción
         const existing = atomList.find(a => a.text.toLowerCase() === clean.toLowerCase());
         if (existing) return existing.letter;
 
+        // Buscar siguiente letra disponible no usada
+        while (atomIndex < atomLetters.length && atomList.some(a => a.letter === atomLetters[atomIndex])) {
+            atomIndex++;
+        }
         const letter = atomLetters[atomIndex % atomLetters.length];
         atomIndex++;
         atomList.push({ letter, text: clean });
@@ -296,6 +318,20 @@ async function translateWithExternalAPI(sentence, config) {
         return null;
     }
 
+    let dictContext = '';
+    try {
+        const rawDict = localStorage.getItem('propositionDictionary');
+        if (rawDict) {
+            const dict = JSON.parse(rawDict);
+            const entries = Object.entries(dict);
+            if (entries.length > 0) {
+                dictContext = `\nDICCIONARIO DE PROPOSICIONES PREDEFINIDO:\n` +
+                    entries.map(([l, m]) => `- ${l}: "${m}"`).join('\n') +
+                    `\nSi la frase del usuario guarda relación con estos conceptos, PRIORIZA y reutiliza estas letras asignadas.\n`;
+            }
+        }
+    } catch (e) {}
+
     const systemPrompt = `Eres un experto profesor de Lógica Proposicional y Filosofía de la Ciencia. 
 Tu tarea es traducir una frase en lenguaje natural en español a una Fórmula Bien Formada (FBF) de lógica proposicional.
 Usa únicamente proposiciones atómicas en minúscula (p, q, r, s, t) y los conectivos oficiales:
@@ -305,7 +341,7 @@ Usa únicamente proposiciones atómicas en minúscula (p, q, r, s, t) y los cone
 - Condicional: →
 - Bicondicional: ↔
 - Paréntesis: ( )
-
+${dictContext}
 Debes responder ÚNICAMENTE con un objeto JSON válido con la siguiente estructura:
 {
   "formula": "FBF aquí (ej: (p ∧ ¬q) → r)",
@@ -486,12 +522,24 @@ function explainFormulaStepByStep(formulaStr) {
     // 3. Resumen semántico conceptual
     const semanticSummary = generateSemanticSummary(ast, mainConn);
 
+    // 4. Traducción semántica con el diccionario si existe
+    let dictionaryTranslation = '';
+    if (typeof window !== 'undefined' && window.PropositionDictionary) {
+        dictionaryTranslation = window.PropositionDictionary.translateFormulaToSpanish(clean);
+    } else if (typeof require !== 'undefined') {
+        try {
+            const dictMod = require('./dictionary.js');
+            dictionaryTranslation = dictMod.translateFormulaToSpanish(clean);
+        } catch (e) {}
+    }
+
     return {
         success: true,
         formula: clean,
         parenthesized: fully,
         atoms: atoms,
         verbalReading: verbalReading,
+        dictionaryTranslation: dictionaryTranslation,
         mainConnectiveInfo: mainConn,
         precedenceSteps: steps,
         semanticSummary: semanticSummary

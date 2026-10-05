@@ -126,6 +126,9 @@
                 <button class="tab-btn" data-tab="reverse-tab" role="tab" aria-selected="false">
                     <span>🔍 Inversor</span>
                 </button>
+                <button class="tab-btn" data-tab="dict-tab" role="tab" aria-selected="false">
+                    <span>📖 Diccionario</span>
+                </button>
                 <button class="tab-btn" data-tab="ai-tab" role="tab" aria-selected="false">
                     <span>🤖 Asistente IA</span>
                 </button>
@@ -178,6 +181,19 @@
                     <div id="build-error-container" class="error-box hidden" role="alert">
                         <div id="build-error-highlight" class="error-highlight-section"></div>
                         <div id="build-error-explanation" class="error-explanation"></div>
+                    </div>
+
+                    <!-- Recuadro: Traducción al Español con el Diccionario -->
+                    <div class="semantic-translation-box" id="build-translation-box">
+                        <div class="semantic-translation-header">
+                            <span class="semantic-translation-title">📖 Traducción al Español (según Diccionario):</span>
+                            <button type="button" class="btn-secondary btn-xs" id="btn-copy-build-translation" title="Copiar traducción al portapapeles">
+                                📋 Copiar
+                            </button>
+                        </div>
+                        <div class="semantic-translation-content" id="build-translation-text">
+                            <span class="empty-hint">Escriba una fórmula para ver su traducción al español con las palabras del diccionario...</span>
+                        </div>
                     </div>
 
                     <!-- Vista previa de Tokens reconocidos -->
@@ -377,6 +393,91 @@
                                 </tr>
                             </thead>
                             <tbody id="reverse-subformulas-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Interpretación Semántica con el Diccionario -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">📖 Interpretación Semántica (con Diccionario)</span>
+                        <button type="button" id="btn-copy-reverse-translation" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            📋 Copiar Traducción
+                        </button>
+                    </div>
+                    <div class="semantic-translation-box-reverse">
+                        <p id="reverse-translation-text" class="semantic-translation-text-reverse"></p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA: DICCIONARIO DE PROPOSICIONES
+             ======================================================== -->
+        <section id="dict-tab" class="tab-content" role="tabpanel">
+            <div class="dict-dashboard-grid">
+                
+                <!-- 1. Formulario de creación y edición de proposiciones -->
+                <div class="builder-card dict-form-card">
+                    <div class="ai-card-badge">Glosario Semántico</div>
+                    <h2 class="card-title">📖 Diccionario de Proposiciones</h2>
+                    <p class="card-desc">
+                        Asigne significados en lenguaje natural a cada proposición atómica (p, q, r, s...). Estas definiciones se integrarán automáticamente en el <strong>Constructor</strong>, el <strong>Inversor</strong> y el <strong>Asistente IA</strong>.
+                    </p>
+
+                    <form id="form-dict-definition" class="dict-form">
+                        <input type="hidden" id="dict-edit-mode" value="">
+                        <div class="dict-form-row">
+                            <div class="dict-input-group dict-letter-group">
+                                <label for="dict-letter-input">Letra:</label>
+                                <input type="text" id="dict-letter-input" class="dict-letter-input" maxlength="1" placeholder="p" required autocomplete="off">
+                            </div>
+                            <div class="dict-input-group dict-meaning-group">
+                                <label for="dict-meaning-input">Significado en Lenguaje Natural:</label>
+                                <input type="text" id="dict-meaning-input" class="auth-input dict-meaning-input" placeholder="Ej: Cuando quiere comer" required autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="dict-form-actions">
+                            <button type="submit" id="btn-dict-save" class="btn-primary">
+                                💾 Guardar en Diccionario
+                            </button>
+                            <button type="button" id="btn-dict-cancel" class="btn-secondary hidden">
+                                Cancelar Edición
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 2. Tabla / Lista de Definiciones Guardadas -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <div>
+                            <span class="res-title">📚 Proposiciones Definidas</span>
+                            <span class="res-count" id="dict-count-badge">(0 definiciones)</span>
+                        </div>
+                        <div class="dict-table-top-actions">
+                            <button type="button" id="btn-dict-clear-all" class="btn-danger btn-sm" title="Borrar todas las definiciones del diccionario">
+                                🗑️ Vaciar Diccionario
+                            </button>
+                        </div>
+                    </div>
+                    <p class="card-desc">Definiciones almacenadas localmente en <code>localStorage</code> bajo la clave <code>propositionDictionary</code>:</p>
+
+                    <div class="subformulas-table-wrapper">
+                        <table class="subformulas-table dict-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 90px;">Letra</th>
+                                    <th>Significado en Lenguaje Natural</th>
+                                    <th style="width: 180px; text-align: right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dict-table-tbody">
+                                <!-- Se llena dinámicamente con JS -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -728,6 +829,7 @@
     <script src="ast.js"></script>
     <script src="parser.js"></script>
     <script src="auth.js"></script>
+    <script src="dictionary.js"></script>
     <script src="ai.js"></script>
     <script src="tests.js"></script>
     <script src="ui.js"></script>
