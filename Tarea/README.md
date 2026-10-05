@@ -1,49 +1,98 @@
 # Constructor de Proposiciones Moleculares 🧠📐
 
-Aplicación web desarrollada con **HTML5, CSS3 y JavaScript Vanilla** (sin frameworks ni librerías externas) para construir, validar, descomponer y analizar **Fórmulas Bien Formadas (FBF)** en Lógica Proposicional mediante árboles de sintaxis abstracta (**AST**).
+Aplicación web desarrollada con **HTML5, CSS3 y JavaScript Vanilla** (sin frameworks externos) para construir, validar, descomponer y analizar **Fórmulas Bien Formadas (FBF)** en Lógica Proposicional mediante árboles de sintaxis abstracta (**AST**), con **Sistema de Autenticación en localStorage**, **Panel de Administrador** y **Módulo de Inteligencia Artificial (Nativo Offline y API)**.
 
 ---
 
-## 🎯 Objetivos y Características Principales
+## 🎯 Objetivos y Módulos de la Aplicación
 
-1. **Modo Construir**:
-   - Inserción interactiva de proposiciones atómicas ($p, q, r, s, t, \dots$) y variables personalizadas.
-   - Teclado virtual ordenado por precedencia lógica con botones para conectivos, paréntesis, borrado, deshacer (`Ctrl+Z`), rehacer (`Ctrl+Y`) y limpieza.
-   - Edición bidireccional y escritura directa desde el teclado físico.
-   - Validación sintáctica y léxica en tiempo real con estados visuales (FBF Válida / Inválida).
-   - **Diagnóstico pedagógico de errores**: muestra la posición exacta (con indicador visual `▲`), el motivo del error y sugerencias didácticas de corrección.
+### 1. Sistema de Login y Perfiles (`auth.js` + `localStorage`)
+- **Pantalla de bienvenida inicial** con 3 opciones:
+  - 👤 **Iniciar Sesión (Usuario)**: Valida credenciales contra `localStorage`.
+  - ✨ **Registrarse**: Crea una nueva cuenta de usuario guardada localmente en el navegador.
+  - 🛡️ **Administrador**: Ingreso mediante contraseña maestra (por defecto: `admin123`).
+- **Cabecera activa**: Muestra el nombre de usuario activo, insignia de rol (`USER` o `ADMIN`), alternador de tema claro/oscuro y botón para **Cerrar Sesión**.
 
-2. **Precedencia y Asociatividad Estrictas**:
-   - $\neg$ (**Negación**): Mayor precedencia, unario prefijo, asocia a la derecha ($\neg\neg p \equiv \neg(\neg p)$).
-   - $\land$ (**Conjunción**): Mayor precedencia que $\lor$, asocia a la izquierda ($p \land q \land r \equiv (p \land q) \land r$).
-   - $\lor$ (**Disyunción**): Mayor precedencia que $\to$, asocia a la izquierda ($p \lor q \lor r \equiv (p \lor q) \lor r$).
-   - $\to$ (**Condicional / Implicación**): Mayor precedencia que $\leftrightarrow$, asocia a la derecha ($p \to q \to r \equiv p \to (q \to r)$).
-   - $\leftrightarrow$ (**Bicondicional / Doble Implicación**): Menor precedencia, asocia a la izquierda ($p \leftrightarrow q \leftrightarrow r \equiv (p \leftrightarrow q) \leftrightarrow r$).
-   - **Paréntesis**: Modifican y anulan la precedencia estándar.
+### 2. Panel de Administrador (`⚙️ Administrador`)
+- **Control de Acceso**: Solo visible y accesible si la sesión activa tiene rol `admin`.
+- **Gestión de Usuarios**:
+  - Tabla de usuarios registrados con fecha de registro y cantidad de fórmulas construidas.
+  - Botón para **Cambiar Contraseña** de cualquier usuario mediante modal.
+  - Botón para **Eliminar Usuario** permanentemente de `localStorage`.
+- **Configuración Global de la Aplicación**:
+  - Modificar el título de la aplicación en tiempo real (persistido en `localStorage`).
+  - Activar/desactivar modo oscuro global por defecto.
+  - Cambiar la contraseña maestra de administrador.
+  - **Gestor de Ejemplos Predefinidos**: Añadir nuevos ejemplos (con validación FBF automática previa) y eliminar ejemplos existentes de la barra global.
+- **Estadísticas de Uso**:
+  - Total de fórmulas construidas y analizadas.
+  - Total de usuarios registrados.
+  - Barras proporcionales de conectivos lógicos más utilizados (`¬`, `∧`, `∨`, `→`, `↔`).
+  - Botón para reiniciar estadísticas a 0.
 
-3. **Conectivos Soportados y Alias**:
-   | Conectivo | Símbolo Oficial | Alias Soportados en Entrada |
-   | :--- | :---: | :---: |
-   | **Negación** | `¬` | `~`, `!` |
-   | **Conjunción** | `∧` | `&`, `&&` |
-   | **Disyunción** | `∨` | `\|`, `\|\|` |
-   | **Condicional** | `→` | `->`, `=>` |
-   | **Bicondicional** | `↔` | `<->`, `<=>` |
+### 3. Módulo de Inteligencia Artificial (`🤖 Asistente IA` / `ai.js`)
+- **Traductor de Lenguaje Natural a FBF**:
+  - Permite ingresar frases cotidianas en español como:
+    - *"Si llueve y no tengo paraguas, entonces me mojo"* $\to$ `(p ∧ ¬q) → r`
+    - *"Estudio o trabajo, pero no me rindo"* $\to$ `(p ∨ q) ∧ ¬r`
+    - *"Iré al cine si y solo si termino la tarea"* $\to$ `p ↔ q`
+    - *"No es cierto que hace frío y llueve"* $\to$ `¬(p ∧ q)`
+  - Desglosa las proposiciones atómicas identificadas ($p, q, r\dots$) con su significado en texto.
+  - Prioriza y utiliza las definiciones guardadas en el **Diccionario de Proposiciones** para formalizaciones más consistentes.
+  - Botones para transferir la fórmula traducida directamente al **Constructor** o al **Inversor**.
+- **Explicador Paso a Paso de FBF**:
+  - Descompone cualquier fórmula en:
+    1. **Lectura verbal** en lenguaje natural formal e **Interpretación Semántica con Diccionario**.
+    2. **Conectivo principal** y alcance de la proposición molecular.
+    3. **Pasos jerárquicos de evaluación** según la precedencia formal.
+    4. **Semántica y condiciones de verdad** (cuándo es Verdadera o Falsa según tablas de verdad).
+- **Motor Híbrido**:
+  - **100% Funcional Offline**: Motor de reglas lingüísticas en JavaScript (sin requerir internet ni claves).
+  - **Conexión Opcional a APIs**: Compatible con Groq (Llama 3.3 70B) o HuggingFace Serverless Inference API vía `fetch`.
 
-4. **Modo Inverso (Análisis Sintáctico y Descomposición)**:
-   - Permite ingresar o transferir cualquier fórmula para su desglose exhaustivo:
-     - **a) Proposiciones atómicas encontradas**: Conjunto ordenado y conteo.
-     - **b) Conectivos usados**: Lista, nombres formales y frecuencia de uso.
-     - **c) Conectivo principal**: Detección del operador raíz o indicación de fórmula atómica.
-     - **d) Subfórmulas**: Tabla jerárquica ordenada de menor a mayor complejidad (desde átomos hasta la fórmula total).
-     - **e) Árbol sintáctico (AST)**:
-       - **Vista Gráfica (SVG interactivo)**: Diagrama jerárquico renderizado en SVG nativo con colores por tipo de nodo, líneas curvas y tooltips.
-       - **Vista Textual (ASCII/Unicode)**: Estructura en árbol legible (`├── `, `└── `) copiable al portapapeles con un clic.
-     - **f) FBF reconstruida con paréntesis explícitos**: Expresión completamente parentizada sin ambigüedades.
+### 4. Diccionario de Proposiciones - Glosario Semántico (`📖 Diccionario` / `dictionary.js`)
+- **Asignación de Significados**:
+  - Asigna significados en lenguaje natural a letras proposicionales ($p, q, r, s\dots$).
+  - Validación de letra única ($a-z$) y detección de duplicados con diálogo de confirmación para sobrescribir.
+  - Persistencia local en `localStorage` bajo la clave `propositionDictionary` (formato JSON: `{"p": "Cuando quiere comer", "q": "manzanas"}`).
+- **Gestión Integral**:
+  - Tabla dinámica y responsiva con visualización de badges para cada letra y comillas para significados.
+  - Botón **✏️ Editar**: Carga la definición en el formulario con la letra bloqueada para actualizar el texto.
+  - Botón **🗑️ Eliminar**: Elimina la definición individual con confirmación.
+  - Botón **🗑️ Vaciar Diccionario**: Limpia todas las definiciones registradas tras confirmación previa.
+- **Traducción Semántica Automatizada**:
+  - Reemplazo inteligente de conectivos al español:
+    - $\land \to$ **Y**
+    - $\lor \to$ **O**
+    - $\neg \to$ **NO**
+    - $\to \to$ **SI ... ENTONCES ...**
+    - $\leftrightarrow \to$ **SI Y SOLO SI**
+  - Mantiene letras en su formato original si aún no han sido registradas en el diccionario.
 
-5. **Suite de Pruebas Unitarias Integrada**:
-   - 34 pruebas automatizadas que cubren el Lexer, Parser, Precedencia, Asociatividad, Modo Inverso y Detección de errores con posición exacta.
-   - Ejecutable interactivamente desde la pestaña **"Suite de Pruebas"** de la app o por consola (`node tests.js`).
+### 5. Modo Construir (Constructor de FBF)
+- Inserción con teclado virtual ordenado por precedencia o escritura directa con teclado físico.
+- Validación sintáctica en tiempo real.
+- **Traducción al Español en Tiempo Real**: Recuadro situado bajo la FBF construida que traduce dinámicamente las letras y conectivos con base en el Diccionario semántico.
+- Diagnóstico de error con puntero visual exacto `▲`, posición y sugerencia didáctica.
+- Historial de Deshacer (`Ctrl+Z`) y Rehacer (`Ctrl+Y`).
+
+### 6. Modo Inverso (Descompositor Sintáctico)
+- Desglose completo de cualquier fórmula ingresada:
+  - a) Proposiciones atómicas encontradas.
+  - b) Conectivos usados y frecuencia.
+  - c) Conectivo principal destacado.
+  - d) **Interpretación Semántica (con Diccionario)**: Sección dedicada con la traducción completa de la FBF al español y botón para copiar al portapapeles.
+  - e) Tabla de subfórmulas ordenada por complejidad.
+  - f) Árbol sintáctico (**AST Gráfico en SVG nativo interactivo** y **AST Textual en ASCII/Unicode**).
+  - g) FBF reconstruida con paréntesis explícitos.
+
+### 7. Precedencia y Asociatividad Estrictas
+1. $\neg$ (**Negación**): Mayor precedencia, unario prefijo, asocia a la **derecha** ($\neg\neg p \equiv \neg(\neg p)$).
+2. $\land$ (**Conjunción**): Mayor precedencia que $\lor$, asocia a la **izquierda** ($p \land q \land r \equiv (p \land q) \land r$).
+3. $\lor$ (**Disyunción**): Mayor precedencia que $\to$, asocia a la **izquierda** ($p \lor q \lor r \equiv (p \lor q) \lor r$).
+4. $\to$ (**Condicional**): Mayor precedencia que $\leftrightarrow$, asocia a la **derecha** ($p \to q \to r \equiv p \to (q \to r)$).
+5. $\leftrightarrow$ (**Bicondicional**): Menor precedencia, asocia a la **izquierda** ($p \leftrightarrow q \leftrightarrow r \equiv (p \leftrightarrow q) \leftrightarrow r$).
+6. **Paréntesis `(...)`**: Modifican y anulan la precedencia estándar.
 
 ---
 
@@ -51,96 +100,99 @@ Aplicación web desarrollada con **HTML5, CSS3 y JavaScript Vanilla** (sin frame
 
 ```text
 c:\Tarea\
-├── index.html       # Estructura semántica, accesibilidad y pestañas
-├── styles.css       # Diseño moderno, responsivo, variables CSS y animaciones
-├── lexer.js         # Analizador léxico (Tokenización, posiciones, alias y errores léxicos)
-├── parser.js        # Analizador sintáctico (Descenso recursivo, precedencia, asociatividad)
-├── ast.js           # Modelado del AST, análisis de subfórmulas, árbol ASCII y SVG nativo
-├── ui.js            # Controlador de eventos del DOM, teclado virtual, historial y vistas
-├── tests.js         # Suite completa de pruebas unitarias (ejecutable en navegador o Node.js)
+├── index.html       # Estructura semántica, accesibilidad, modales y pestañas
+├── styles.css       # Diseño moderno, temas claro/oscuro, glosario semántico y paneles
+├── lexer.js         # Analizador léxico (Tokenización, posiciones, alias)
+├── parser.js        # Analizador sintáctico por descenso recursivo con precedencia
+├── ast.js           # Modelado del AST, subfórmulas, árbol ASCII y renderizador SVG
+├── auth.js          # Sistema de login, registro, admin maestro y localStorage
+├── dictionary.js    # Glosario semántico, persistencia propositionDictionary y traducción
+├── ai.js            # Motor de IA de lenguaje natural, explicador y conexión fetch
+├── ui.js            # Controlador integral del DOM, eventos, sincronización y vistas
+├── tests.js         # Suite de 51 pruebas unitarias automatizadas (8 categorías)
 ├── package.json     # Metadatos del proyecto y script npm test
-└── README.md        # Documentación técnica y guía de ejecución
+└── README.md        # Documentación técnica completa
 ```
 
 ---
 
 ## 🚀 Instrucciones para Ejecutarlo en VS Code
 
-### Opción 1: Abrir directamente en el navegador (Sin servidor requerido)
+### Opción 1: Abrir directamente en el navegador (Sin dependencias ni servidor)
 1. En el Explorador de Archivos de VS Code, localiza el archivo `index.html`.
-2. Haz clic derecho sobre `index.html` y selecciona **"Open with Default Browser"** (o arrastra `index.html` a cualquier navegador: Chrome, Edge, Firefox, Safari).
-3. La aplicación funcionará al 100% de manera inmediata, gracias a que los módulos están diseñados con compatibilidad universal.
+2. Haz doble clic o clic derecho y selecciona **"Open with Default Browser"**.
+3. La aplicación se ejecutará de forma inmediata sin bloqueos de CORS.
 
-### Opción 2: Usar la extensión Live Server de VS Code (Recomendado)
-1. Instala la extensión **Live Server** de *Ritwick Dey* en VS Code.
-2. Abre la carpeta del proyecto en VS Code.
-3. Haz clic derecho sobre `index.html` y selecciona **"Open with Live Server"** (o presiona el botón *Go Live* en la barra de estado inferior).
-4. Se abrirá automáticamente en `http://127.0.0.1:5500/index.html`.
-
-### Opción 3: Servidor HTTP local con Python o Node
-Si cuentas con Python o Node instalado:
-```bash
-# Con Python
-python -m http.server 8080
-
-# Con npx (Node)
-npx serve .
-```
-Luego abre `http://localhost:8080` en tu navegador.
+### Opción 2: Usar Live Server en VS Code (Recomendado)
+1. Instala la extensión **Live Server** en VS Code.
+2. Haz clic derecho sobre `index.html` y selecciona **"Open with Live Server"**.
+3. Se abrirá en tu navegador en `http://127.0.0.1:5500/index.html`.
 
 ---
 
-## 🧪 Ejecución de Pruebas Unitarias
+## 🧪 Cómo Probar las Nuevas Funcionalidades
 
-### Método 1: Desde la Interfaz Web (1 Clic)
-1. Abre la aplicación en tu navegador.
-2. Haz clic en la pestaña **"🧪 Suite de Pruebas"** en la barra superior.
-3. Presiona el botón **"▶ Ejecutar Todas las Pruebas"**.
-4. Podrás observar los contadores métricos y el resultado detallado de cada una de las 34 pruebas en tiempo real.
+### 1. Probar el Login y los Perfiles:
+1. Al abrir la app, se mostrará la pantalla de acceso con 3 opciones.
+2. **Registro**:
+   - Haz clic en **"✨ Registrarse"**, escribe un usuario (ej: `carlos`) y una contraseña (ej: `12345`).
+   - Haz clic en **"Crear Mi Cuenta"**. Ingresarás automáticamente como usuario regular.
+3. **Cerrar Sesión**:
+   - En la esquina superior derecha, pulsa **"🚪 Cerrar Sesión"**.
+4. **Acceso de Administrador**:
+   - En la pantalla de bienvenida, haz clic en **"🛡️ Administrador"**.
+   - Escribe la contraseña maestra: `admin123`.
+   - Haz clic en **"Acceder como Administrador"**. Observarás que se habilita la pestaña **"⚙️ Administrador"** en la barra superior.
 
-### Método 2: Por Consola con Node.js
-Si tienes Node.js instalado en tu sistema, ejecuta en el terminal:
-```bash
-node tests.js
-```
-o mediante:
-```bash
-npm test
-```
+### 2. Probar el Panel de Administrador:
+1. Ingresa como Administrador y haz clic en la pestaña **"⚙️ Administrador"**.
+2. **Gestión de Usuarios**:
+   - Verás la lista de usuarios registrados.
+   - Pulsa **"🔑 Contraseña"** para cambiar la clave de un usuario.
+   - Pulsa **"🗑️ Eliminar"** para borrar un usuario.
+3. **Configuración Global**:
+   - Cambia el título de la aplicación y pulsa **"Guardar Configuración"**. Verás cómo se actualiza de inmediato en toda la interfaz.
+4. **Gestor de Ejemplos**:
+   - Escribe una nueva fórmula (ej: `(p → q) ∧ (q → r)`) y pulsa **"➕ Añadir"**.
+   - Aparecerá instantáneamente en la barra superior de ejemplos de la aplicación.
+5. **Estadísticas**:
+   - Visualiza el contador de fórmulas construidas y las barras de frecuencia de conectivos.
 
----
+### 3. Probar el Diccionario de Proposiciones (Glosario Semántico):
+1. Haz clic en la pestaña **"📖 Diccionario"**.
+2. **Crear una definición**:
+   - En **Letra**, escribe `p`.
+   - En **Significado**, escribe `Cuando quiere comer`.
+   - Pulsa **"💾 Guardar en Diccionario"**.
+   - Si la letra ya existía, el sistema te preguntará mediante un diálogo si deseas sobrescribir su significado.
+   - Agrega otra definición: Letra `q`, Significado `manzanas`.
+3. **Editar y Eliminar**:
+   - En la tabla de proposiciones, pulsa **"✏️ Editar"** en cualquiera de las filas para modificar su texto.
+   - Pulsa **"🗑️ Eliminar"** para remover una definición individual.
+   - Pulsa **"🗑️ Vaciar Diccionario"** (con confirmación) para reiniciar el glosario.
+4. **Reflejo en el Constructor**:
+   - Ve a la pestaña **"🔨 Constructor"**.
+   - Escribe o construye con los botones la fórmula `p ∧ q`.
+   - Observa inmediatamente debajo de la FBF el recuadro **"Traducción al Español"**: mostrará `"Cuando quiere comer" Y "manzanas"`.
+   - Si escribes `p ∧ r` (donde `r` no está en el diccionario), se conservará la letra original: `"Cuando quiere comer" Y r`.
+   - Prueba con otros conectivos como `p → q`: verás `SI "Cuando quiere comer" ENTONCES "manzanas"`.
+5. **Reflejo en el Inversor**:
+   - Ve a la pestaña **"🔍 Inversor"**.
+   - Ingresa `(p ∧ q) → r` y pulsa **"🔍 Analizar Fórmula"**.
+   - En el panel de resultados, verás la tarjeta **"📖 Interpretación Semántica (con Diccionario)"** mostrando:
+     `SI "Cuando quiere comer" Y "manzanas" ENTONCES r` con un botón rápido para copiar la traducción al portapapeles.
 
-## 📋 Ejemplos de Prueba Incluidos
+### 4. Probar el Módulo de Inteligencia Artificial:
+1. Ve a la pestaña **"🤖 Asistente IA"**.
+2. **Traductor**:
+   - Haz clic en cualquiera de las frases de ejemplo (ej: *"Si llueve y no tengo paraguas, entonces me mojo"*).
+   - Pulsa **"✨ Traducir a FBF con IA"**.
+   - La IA generará la fórmula `(p ∧ ¬q) → r`, el glosario de proposiciones atómicas y la explicación lógica (considerando las definiciones del diccionario).
+   - Pulsa **"🔨 Cargar en Constructor"** para llevar la fórmula directamente al editor interactivo.
+3. **Explicador Paso a Paso**:
+   - En la sección derecha, escribe una fórmula (o pulsa *"📥 Usar Fórmula del Constructor"*).
+   - Pulsa **"💡 Explicar Paso a Paso"** para ver la lectura en lenguaje natural formal, la **interpretación con el diccionario semántico**, el conectivo principal, los pasos jerárquicos de precedencia y las condiciones de verdad.
 
-Puedes hacer clic directamente en los botones de ejemplo en la cabecera de la aplicación para probarlos de inmediato:
-
-1. **`((p ∧ q) → ¬r)`**
-   - Conectivo principal: `→` (Condicional)
-   - Proposiciones atómicas: $p, q, r$
-   - Conectivos usados: `∧`, `→`, `¬`
-   - Paréntesis explícitos: `((p ∧ q) → (¬r))`
-
-2. **`(p ∨ q) ↔ (r → s)`**
-   - Conectivo principal: `↔` (Bicondicional)
-   - Proposiciones atómicas: $p, q, r, s$
-   - Conectivos usados: `∨`, `↔`, `→`
-
-3. **`¬(p ∧ q) ∨ r`**
-   - Conectivo principal: `∨` (Disyunción)
-   - Demuestra la precedencia de $\neg$ sobre la subfórmula agrupada $(p \land q)$.
-
-4. **`(p → (q → r)) ↔ ((p ∧ q) → r)`**
-   - Ley de Exportación en Lógica Proposicional.
-   - Demuestra la asociatividad a la derecha del condicional `→`.
-
-5. **`¬(p ∨ ¬q) ∧ (r → s)`**
-   - Expresión con múltiples niveles de anidamiento y negaciones compuestas.
-
----
-
-## 🛡️ Justificación de Cero Librerías Externas
-
-De acuerdo con el requisito de no utilizar frameworks externos:
-- **Sin React/Vue/Angular**: Se utilizó manipulación nativa del DOM con JavaScript ES6+, permitiendo un rendimiento instantáneo sin compiladores ni transpiladores.
-- **Sin D3 ni librerías de gráficos pesadas**: El visualizador del **Árbol Sintáctico (AST)** genera dinámicamente un documento **SVG nativo** calculando las coordenadas y curvas de Bézier directamente en `ast.js`.
-- **Sin librerías de testing (Jest/Mocha)**: Se construyó un ejecutor de pruebas unitarias (`TestRunner`) ligero y nativo en `tests.js`, capaz de ejecutarse tanto en entornos de navegador como en CLI sin instalar paquetes en `node_modules`.
+### 5. Ejecución de la Suite de Pruebas Unitarias:
+- **Desde la app**: Ve a la pestaña **"🧪 Suite de Pruebas"** y haz clic en **"▶ Ejecutar Todas las Pruebas"**. Se ejecutarán las **51 pruebas unitarias** divididas en 8 categorías (Lexer, Parser, Precedencia, Asociatividad, Modo Inverso, Autenticación, Módulo de IA y Diccionario de Proposiciones), alcanzando el **100% de aprobadas (51/51)**.
+- **Desde terminal**: Si tienes Node.js instalado, ejecuta `node tests.js`.

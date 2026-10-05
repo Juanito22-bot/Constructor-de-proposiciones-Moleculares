@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Constructor de Proposiciones Moleculares - Lógica Proposicional</title>
+    <title id="page-title">Constructor de Proposiciones Moleculares - Lógica Proposicional</title>
     <!-- Fuentes modernas para legibilidad tipográfica y símbolos lógicos -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,27 +12,131 @@
 </head>
 <body>
 
+    <!-- ========================================================
+         MODAL / PANTALLA DE INICIO Y AUTENTICACIÓN (LOGIN / REGISTRO / ADMIN)
+         ======================================================== -->
+    <div id="auth-overlay" class="auth-overlay hidden">
+        <div class="auth-modal">
+            <div class="auth-header">
+                <div class="auth-brand-icon">∧</div>
+                <h2 class="auth-title">Acceso al Sistema</h2>
+                <p class="auth-subtitle">Constructor de Proposiciones Moleculares</p>
+            </div>
+
+            <!-- Selector de tipo de acceso (3 botones requeridos) -->
+            <div class="auth-tabs" role="tablist">
+                <button type="button" class="auth-tab-btn active" id="auth-tab-login" data-auth-mode="login">
+                    👤 Iniciar Sesión (Usuario)
+                </button>
+                <button type="button" class="auth-tab-btn" id="auth-tab-register" data-auth-mode="register">
+                    ✨ Registrarse
+                </button>
+                <button type="button" class="auth-tab-btn" id="auth-tab-admin" data-auth-mode="admin">
+                    🛡️ Administrador
+                </button>
+            </div>
+
+            <!-- Contenedor de formularios dinámicos -->
+            <div class="auth-forms-container">
+                
+                <!-- 1. Formulario Iniciar Sesión (Usuario) -->
+                <form id="form-login" class="auth-form active">
+                    <div class="form-group">
+                        <label for="login-username">Nombre de Usuario</label>
+                        <input type="text" id="login-username" class="auth-input" placeholder="Ej: estudiante" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Contraseña</label>
+                        <input type="password" id="login-password" class="auth-input" placeholder="••••••••" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary auth-submit-btn">
+                        🚀 Entrar como Usuario
+                    </button>
+                    <p class="auth-hint">¿No tienes cuenta? Haz clic en la pestaña <strong>Registrarse</strong>.</p>
+                </form>
+
+                <!-- 2. Formulario Registrarse -->
+                <form id="form-register" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="register-username">Nombre de Usuario Deseado</label>
+                        <input type="text" id="register-username" class="auth-input" placeholder="Mínimo 3 caracteres" autocomplete="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Contraseña</label>
+                        <input type="password" id="register-password" class="auth-input" placeholder="Mínimo 4 caracteres" autocomplete="new-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password-confirm">Confirmar Contraseña</label>
+                        <input type="password" id="register-password-confirm" class="auth-input" placeholder="Repite la contraseña" autocomplete="new-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary auth-submit-btn">
+                        ✨ Crear Mi Cuenta
+                    </button>
+                    <p class="auth-hint">Tus datos se guardarán localmente en este navegador (localStorage).</p>
+                </form>
+
+                <!-- 3. Formulario Administrador -->
+                <form id="form-admin" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="admin-password">Contraseña Maestra de Administrador</label>
+                        <input type="password" id="admin-password" class="auth-input" placeholder="Por defecto: admin123" autocomplete="current-password" required>
+                    </div>
+                    <button type="submit" class="btn-primary auth-submit-btn btn-admin-accent">
+                        🛡️ Acceder como Administrador
+                    </button>
+                    <p class="auth-hint">Acceso con privilegios de gestión de usuarios, estadísticas y configuración global.</p>
+                </form>
+
+                <!-- Mensaje de feedback de autenticación -->
+                <div id="auth-alert" class="auth-alert hidden"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- ENCABEZADO DE LA APLICACIÓN -->
     <header class="app-header">
         <div class="header-container">
             <div class="brand-wrapper">
                 <div class="brand-icon">∧</div>
                 <div>
-                    <h1 class="brand-title">Constructor de Proposiciones Moleculares</h1>
+                    <h1 class="brand-title" id="app-header-title">Constructor de Proposiciones Moleculares</h1>
                     <p class="brand-subtitle">Lógica Proposicional • Fórmulas Bien Formadas (FBF) • Árboles Sintácticos (AST)</p>
                 </div>
+            </div>
+
+            <!-- CONTROLES DE USUARIO Y SESIÓN EN CABECERA -->
+            <div class="user-header-controls" id="user-header-controls">
+                <div class="user-pill">
+                    <span id="user-role-badge" class="user-role-badge role-user">USER</span>
+                    <span id="user-display-name" class="user-name">Iniciando...</span>
+                </div>
+                <button type="button" id="btn-theme-toggle" class="btn-icon" title="Alternar Modo Oscuro / Claro" aria-label="Cambiar tema">
+                    🌓
+                </button>
+                <button type="button" id="btn-logout" class="btn-secondary btn-sm" title="Cerrar sesión actual">
+                    🚪 Cerrar Sesión
+                </button>
             </div>
 
             <!-- NAVEGACIÓN ENTRE PESTAÑAS -->
             <nav class="nav-tabs" role="tablist">
                 <button class="tab-btn active" data-tab="build-tab" role="tab" aria-selected="true">
-                    <span>🔨 Modo Construir</span>
+                    <span>🔨 Constructor</span>
                 </button>
                 <button class="tab-btn" data-tab="reverse-tab" role="tab" aria-selected="false">
-                    <span>🔍 Modo Inverso</span>
+                    <span>🔍 Inversor</span>
+                </button>
+                <button class="tab-btn" data-tab="dict-tab" role="tab" aria-selected="false">
+                    <span>📖 Diccionario</span>
+                </button>
+                <button class="tab-btn" data-tab="ai-tab" role="tab" aria-selected="false">
+                    <span>🤖 Asistente IA</span>
                 </button>
                 <button class="tab-btn" data-tab="tests-tab" role="tab" aria-selected="false">
                     <span>🧪 Suite de Pruebas</span>
+                </button>
+                <button class="tab-btn hidden" id="tab-btn-admin" data-tab="admin-tab" role="tab" aria-selected="false">
+                    <span>⚙️ Administrador</span>
                 </button>
             </nav>
         </div>
@@ -41,15 +145,11 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="app-main">
 
-        <!-- BARRA COMÚN DE EJEMPLOS DE PRUEBA -->
+        <!-- BARRA COMÚN DE EJEMPLOS DE PRUEBA (DINÁMICA) -->
         <section class="examples-bar" aria-label="Ejemplos predefinidos">
-            <span class="examples-label">💡 Ejemplos de prueba:</span>
-            <div class="examples-chips">
-                <button type="button" class="example-chip" data-formula="((p ∧ q) → ¬r)">((p ∧ q) → ¬r)</button>
-                <button type="button" class="example-chip" data-formula="(p ∨ q) ↔ (r → s)">(p ∨ q) ↔ (r → s)</button>
-                <button type="button" class="example-chip" data-formula="¬(p ∧ q) ∨ r">¬(p ∧ q) ∨ r</button>
-                <button type="button" class="example-chip" data-formula="(p → (q → r)) ↔ ((p ∧ q) → r)">(p → (q → r)) ↔ ((p ∧ q) → r)</button>
-                <button type="button" class="example-chip" data-formula="¬(p ∨ ¬q) ∧ (r → s)">¬(p ∨ ¬q) ∧ (r → s)</button>
+            <span class="examples-label">💡 Ejemplos rápidos:</span>
+            <div class="examples-chips" id="global-examples-container">
+                <!-- Se inyectan dinámicamente desde AppConfig en localStorage -->
             </div>
         </section>
 
@@ -81,6 +181,19 @@
                     <div id="build-error-container" class="error-box hidden" role="alert">
                         <div id="build-error-highlight" class="error-highlight-section"></div>
                         <div id="build-error-explanation" class="error-explanation"></div>
+                    </div>
+
+                    <!-- Recuadro: Traducción al Español con el Diccionario -->
+                    <div class="semantic-translation-box" id="build-translation-box">
+                        <div class="semantic-translation-header">
+                            <span class="semantic-translation-title">📖 Traducción al Español (según Diccionario):</span>
+                            <button type="button" class="btn-secondary btn-xs" id="btn-copy-build-translation" title="Copiar traducción al portapapeles">
+                                📋 Copiar
+                            </button>
+                        </div>
+                        <div class="semantic-translation-content" id="build-translation-text">
+                            <span class="empty-hint">Escriba una fórmula para ver su traducción al español con las palabras del diccionario...</span>
+                        </div>
                     </div>
 
                     <!-- Vista previa de Tokens reconocidos -->
@@ -284,11 +397,251 @@
                     </div>
                 </div>
 
+                <!-- Interpretación Semántica con el Diccionario -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">📖 Interpretación Semántica (con Diccionario)</span>
+                        <button type="button" id="btn-copy-reverse-translation" class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                            📋 Copiar Traducción
+                        </button>
+                    </div>
+                    <div class="semantic-translation-box-reverse">
+                        <p id="reverse-translation-text" class="semantic-translation-text-reverse"></p>
+                    </div>
+                </div>
+
             </div>
         </section>
 
         <!-- ========================================================
-             PESTAÑA 3: SUITE DE PRUEBAS UNITARIAS
+             PESTAÑA: DICCIONARIO DE PROPOSICIONES
+             ======================================================== -->
+        <section id="dict-tab" class="tab-content" role="tabpanel">
+            <div class="dict-dashboard-grid">
+                
+                <!-- 1. Formulario de creación y edición de proposiciones -->
+                <div class="builder-card dict-form-card">
+                    <div class="ai-card-badge">Glosario Semántico</div>
+                    <h2 class="card-title">📖 Diccionario de Proposiciones</h2>
+                    <p class="card-desc">
+                        Asigne significados en lenguaje natural a cada proposición atómica (p, q, r, s...). Estas definiciones se integrarán automáticamente en el <strong>Constructor</strong>, el <strong>Inversor</strong> y el <strong>Asistente IA</strong>.
+                    </p>
+
+                    <form id="form-dict-definition" class="dict-form">
+                        <input type="hidden" id="dict-edit-mode" value="">
+                        <div class="dict-form-row">
+                            <div class="dict-input-group dict-letter-group">
+                                <label for="dict-letter-input">Letra:</label>
+                                <input type="text" id="dict-letter-input" class="dict-letter-input" maxlength="1" placeholder="p" required autocomplete="off">
+                            </div>
+                            <div class="dict-input-group dict-meaning-group">
+                                <label for="dict-meaning-input">Significado en Lenguaje Natural:</label>
+                                <input type="text" id="dict-meaning-input" class="auth-input dict-meaning-input" placeholder="Ej: Cuando quiere comer" required autocomplete="off">
+                            </div>
+                        </div>
+
+                        <div class="dict-form-actions">
+                            <button type="submit" id="btn-dict-save" class="btn-primary">
+                                💾 Guardar en Diccionario
+                            </button>
+                            <button type="button" id="btn-dict-cancel" class="btn-secondary hidden">
+                                Cancelar Edición
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 2. Tabla / Lista de Definiciones Guardadas -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <div>
+                            <span class="res-title">📚 Proposiciones Definidas</span>
+                            <span class="res-count" id="dict-count-badge">(0 definiciones)</span>
+                        </div>
+                        <div class="dict-table-top-actions">
+                            <button type="button" id="btn-dict-clear-all" class="btn-danger btn-sm" title="Borrar todas las definiciones del diccionario">
+                                🗑️ Vaciar Diccionario
+                            </button>
+                        </div>
+                    </div>
+                    <p class="card-desc">Definiciones almacenadas localmente en <code>localStorage</code> bajo la clave <code>propositionDictionary</code>:</p>
+
+                    <div class="subformulas-table-wrapper">
+                        <table class="subformulas-table dict-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 90px;">Letra</th>
+                                    <th>Significado en Lenguaje Natural</th>
+                                    <th style="width: 180px; text-align: right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dict-table-tbody">
+                                <!-- Se llena dinámicamente con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 3: ASISTENTE IA (LENGUAJE NATURAL Y EXPLICADOR)
+             ======================================================== -->
+        <section id="ai-tab" class="tab-content" role="tabpanel">
+            <div class="ai-dashboard-grid">
+                
+                <!-- SECCIÓN A: TRADUCTOR DE LENGUAJE NATURAL A FBF -->
+                <div class="builder-card ai-feature-card">
+                    <div class="ai-card-badge">Traducción Semántica</div>
+                    <h2 class="card-title">🗣️ Traductor de Lenguaje Natural a FBF</h2>
+                    <p class="card-desc">
+                        Escriba una afirmación cotidiana o condicional. La Inteligencia Artificial analizará las cláusulas, identificará las proposiciones atómicas y generará la Fórmula Bien Formada (FBF) correspondiente.
+                    </p>
+
+                    <!-- Frases de ejemplo sugeridas -->
+                    <div class="ai-quick-examples">
+                        <span class="ai-examples-label">Prueba con estas frases:</span>
+                        <div class="ai-example-tags">
+                            <button type="button" class="ai-tag-btn" data-sentence="Si llueve y no tengo paraguas, entonces me mojo">"Si llueve y no tengo paraguas, entonces me mojo"</button>
+                            <button type="button" class="ai-tag-btn" data-sentence="Estudio o trabajo, pero no me rindo">"Estudio o trabajo, pero no me rindo"</button>
+                            <button type="button" class="ai-tag-btn" data-sentence="Iré al cine si y solo si termino la tarea">"Iré al cine si y solo si termino la tarea"</button>
+                            <button type="button" class="ai-tag-btn" data-sentence="No es cierto que hace frío y llueve">"No es cierto que hace frío y llueve"</button>
+                        </div>
+                    </div>
+
+                    <!-- Input para escribir la frase -->
+                    <div class="ai-input-group">
+                        <textarea id="ai-nl-input" class="ai-textarea" rows="2" placeholder="Escriba su frase en lenguaje natural aquí... (ej: Si estudio y apruebo, entonces festejo)"></textarea>
+                        <div class="ai-input-actions">
+                            <button type="button" id="btn-ai-translate" class="btn-primary">
+                                ✨ Traducir a FBF con IA
+                            </button>
+                            <button type="button" id="btn-ai-clear-nl" class="btn-secondary">
+                                Limpiar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Resultados de la traducción -->
+                    <div id="ai-nl-results" class="ai-result-box hidden">
+                        <div class="ai-result-header">
+                            <span class="ai-result-title">Fórmula Proposicional Generada:</span>
+                            <span id="ai-source-badge" class="ai-badge-source">Motor Local Offline</span>
+                        </div>
+                        <div class="ai-formula-display">
+                            <span id="ai-generated-formula" class="ai-formula-text">(p ∧ ¬q) → r</span>
+                            <div class="ai-formula-actions">
+                                <button type="button" id="btn-copy-ai-formula" class="btn-secondary btn-sm" title="Copiar fórmula">
+                                    📋 Copiar
+                                </button>
+                                <button type="button" id="btn-ai-to-build" class="btn-primary btn-sm" title="Transferir al Constructor">
+                                    🔨 Cargar en Constructor
+                                </button>
+                                <button type="button" id="btn-ai-to-reverse" class="btn-primary btn-sm" title="Transferir al Inversor">
+                                    🔍 Analizar en Inversor
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Glosario de Atómicas -->
+                        <div class="ai-atoms-mapping">
+                            <h4>Glosario de Proposiciones Atómicas Identificadas:</h4>
+                            <div id="ai-atoms-chips" class="ai-atoms-chips-grid"></div>
+                        </div>
+
+                        <!-- Explicación de la formalización -->
+                        <div class="ai-explanation-box">
+                            <h4>Explicación de la Lógica Proposicional:</h4>
+                            <div id="ai-explanation-text" class="ai-explanation-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN B: EXPLICADOR PASO A PASO DE FBF -->
+                <div class="builder-card ai-feature-card">
+                    <div class="ai-card-badge">Tutor Didáctico</div>
+                    <h2 class="card-title">📖 Explicador Paso a Paso de FBF</h2>
+                    <p class="card-desc">
+                        Ingrese cualquier FBF para que la IA la descomponga didácticamente: cómo se lee verbalmente, cuál es el conectivo principal, la jerarquía de precedencia y las condiciones de verdad de la fórmula.
+                    </p>
+
+                    <div class="ai-input-group">
+                        <input type="text" id="ai-explain-input" class="formula-input" placeholder="Ej: ((p ∧ q) → ¬r) o p ∨ q ↔ r → s">
+                        <div class="ai-input-actions">
+                            <button type="button" id="btn-ai-explain" class="btn-primary">
+                                💡 Explicar Paso a Paso
+                            </button>
+                            <button type="button" id="btn-ai-use-current" class="btn-secondary" title="Usar fórmula que está en el Constructor">
+                                📥 Usar Fórmula del Constructor
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Resultados del Explicador -->
+                    <div id="ai-explain-results" class="ai-result-box hidden">
+                        <!-- 1. Lectura Verbal -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">🗣️ Lectura Verbal en Lenguaje Natural:</div>
+                            <p id="explain-verbal-reading" class="explain-reading-text"></p>
+                        </div>
+
+                        <!-- 2. Conectivo Principal -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">🌟 Conectivo Principal y Alcance:</div>
+                            <p id="explain-main-connective" class="explain-reading-text"></p>
+                        </div>
+
+                        <!-- 3. Pasos de Evaluación y Precedencia -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">🪜 Orden Jerárquico de Evaluación (Precedencia):</div>
+                            <div id="explain-steps-list" class="explain-steps-container"></div>
+                        </div>
+
+                        <!-- 4. Resumen Semántico Conceptual -->
+                        <div class="explain-card">
+                            <div class="explain-card-title">⚖️ Semántica y Condiciones de Verdad:</div>
+                            <p id="explain-semantic-summary" class="explain-reading-text"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN C: CONFIGURACIÓN OPCIONAL DE IA EXTERNA (GROQ / HUGGINGFACE) -->
+                <div class="builder-card ai-feature-card" style="grid-column: 1 / -1;">
+                    <details class="ai-config-accordion">
+                        <summary class="ai-config-summary">
+                            <span>⚙️ Configuración del Motor de Inteligencia Artificial (Opcional)</span>
+                            <span class="ai-config-sub">Por defecto funciona sin internet con el motor nativo de reglas en JavaScript</span>
+                        </summary>
+                        <div class="ai-config-body">
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label for="ai-provider-select">Proveedor de IA:</label>
+                                    <select id="ai-provider-select" class="auth-input">
+                                        <option value="offline">Motor de Reglas Offline (100% Nativo sin Internet)</option>
+                                        <option value="groq">Groq Cloud API (Llama 3.3 70B - Ultra Rápido)</option>
+                                        <option value="huggingface">HuggingFace Serverless Inference API</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="ai-api-key-input">API Key (Solo requerida si seleccionas Groq / HuggingFace):</label>
+                                    <input type="password" id="ai-api-key-input" class="auth-input" placeholder="gsk_... o hf_...">
+                                </div>
+                            </div>
+                            <div style="margin-top: 0.75rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                <button type="button" id="btn-save-ai-config" class="btn-primary btn-sm">
+                                    💾 Guardar Configuración de IA
+                                </button>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================================
+             PESTAÑA 4: SUITE DE PRUEBAS UNITARIAS
              ======================================================== -->
         <section id="tests-tab" class="tab-content" role="tabpanel">
             <div class="builder-card">
@@ -326,13 +679,140 @@
             </div>
         </section>
 
+        <!-- ========================================================
+             PESTAÑA 5: PANEL DE ADMINISTRADOR (SOLO ADMIN)
+             ======================================================== -->
+        <section id="admin-tab" class="tab-content" role="tabpanel">
+            <div class="admin-dashboard-grid">
+                
+                <!-- 1. ESTADÍSTICAS GLOBALES DE LA APLICACIÓN -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">📊 Estadísticas Globales de Uso</span>
+                        <button type="button" id="btn-reset-stats" class="btn-secondary btn-sm" title="Reiniciar contadores">
+                            🔄 Reiniciar Estadísticas
+                        </button>
+                    </div>
+                    <div class="admin-stats-summary-grid">
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-number" id="stat-total-formulas">0</span>
+                            <span class="admin-stat-label">Fórmulas Construidas / Analizadas</span>
+                        </div>
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-number" id="stat-total-users">0</span>
+                            <span class="admin-stat-label">Usuarios Registrados</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 1.25rem;">
+                        <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem; color: var(--text-secondary);">Conectivos más utilizados:</h4>
+                        <div class="connectives-usage-bars" id="admin-connectives-usage">
+                            <!-- Se inyectan barras de conteo dinámicas -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. GESTIÓN DE USUARIOS REGISTRADOS -->
+                <div class="res-card res-card-full">
+                    <div class="res-header">
+                        <span class="res-title">👥 Gestión de Usuarios Registrados</span>
+                        <span class="res-count" id="admin-users-count">(0 usuarios)</span>
+                    </div>
+                    <p class="card-desc">Lista de usuarios guardados en localStorage. Como Administrador puedes cambiar contraseñas o eliminarlos del sistema.</p>
+                    
+                    <div class="subformulas-table-wrapper">
+                        <table class="subformulas-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Fecha de Registro</th>
+                                    <th>Fórmulas Creadas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-tbody">
+                                <!-- Se llena dinámicamente con JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. CONFIGURACIÓN DE LA APLICACIÓN -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">🛠️ Configuración General</span>
+                    </div>
+                    <form id="form-admin-config" class="admin-config-form">
+                        <div class="form-group">
+                            <label for="admin-app-title">Título de la Aplicación:</label>
+                            <input type="text" id="admin-app-title" class="auth-input" value="Constructor de Proposiciones Moleculares">
+                        </div>
+                        <div class="form-group">
+                            <label class="toggle-label">
+                                <span>Modo Oscuro Global por Defecto:</span>
+                                <input type="checkbox" id="admin-dark-mode-toggle" checked>
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="admin-change-master-pass">Nueva Contraseña Maestra de Admin:</label>
+                            <input type="password" id="admin-change-master-pass" class="auth-input" placeholder="Dejar vacío para no cambiar">
+                        </div>
+                        <button type="submit" class="btn-primary btn-sm">
+                            💾 Guardar Configuración
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 4. GESTOR DE EJEMPLOS PREDEFINIDOS -->
+                <div class="res-card res-card-half">
+                    <div class="res-header">
+                        <span class="res-title">💡 Gestión de Ejemplos Predefinidos</span>
+                    </div>
+                    <p class="card-desc">Añade o elimina las fórmulas que aparecen en la barra de ejemplos de toda la app:</p>
+
+                    <div class="add-example-group">
+                        <input type="text" id="admin-new-example-input" class="auth-input" placeholder="Nueva fórmula (ej: p ∧ q → r)">
+                        <button type="button" id="btn-admin-add-example" class="btn-primary btn-sm">
+                            ➕ Añadir
+                        </button>
+                    </div>
+
+                    <div class="admin-examples-list" id="admin-examples-list">
+                        <!-- Lista de ejemplos con botón de eliminar -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </main>
+
+    <!-- MODAL PARA CAMBIAR CONTRASEÑA DE UN USUARIO (ADMIN) -->
+    <div id="modal-change-pass" class="auth-overlay hidden">
+        <div class="auth-modal" style="max-width: 420px;">
+            <div class="auth-header">
+                <h3 class="auth-title">Cambiar Contraseña de Usuario</h3>
+                <p class="auth-subtitle" id="modal-user-target">Usuario: -</p>
+            </div>
+            <form id="form-modal-change-pass">
+                <input type="hidden" id="modal-user-id">
+                <div class="form-group">
+                    <label for="modal-new-password">Nueva Contraseña</label>
+                    <input type="password" id="modal-new-password" class="auth-input" placeholder="Mínimo 4 caracteres" required>
+                </div>
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button type="button" id="btn-modal-cancel-pass" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- PIE DE PÁGINA (FOOTER) CON REGLAS DE PRECEDENCIA -->
     <footer class="app-footer">
         <div class="footer-container">
             <div>
-                <strong>Constructor de Proposiciones Moleculares</strong> • Vanilla HTML5 / CSS3 / JavaScript
+                <strong id="footer-app-title">Constructor de Proposiciones Moleculares</strong> • Vanilla HTML5 / CSS3 / JavaScript
             </div>
             <ul class="footer-rules" aria-label="Reglas de precedencia">
                 <li>1. ¬ (Mayor, der)</li>
@@ -348,6 +828,9 @@
     <script src="lexer.js"></script>
     <script src="ast.js"></script>
     <script src="parser.js"></script>
+    <script src="auth.js"></script>
+    <script src="dictionary.js"></script>
+    <script src="ai.js"></script>
     <script src="tests.js"></script>
     <script src="ui.js"></script>
 </body>
